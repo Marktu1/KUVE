@@ -84,3 +84,32 @@ html, body { min-height: 100%; }
 .prato-t.esgotado { border-color: var(--erro); background: #FDEEEC; }
 .prato-t.esgotado .mini { filter: grayscale(1); opacity: .6; }
 .prato-t.esgotado small { color: var(--erro); }
+
+/* Estados novos: etiqueta, valor, pagamento */
+@media (min-width: 900px) { .quadro.com-pagar { grid-template-columns: repeat(4, 1fr); } }
+.etiqueta { justify-self: start; padding: 3px 10px; border-radius: 999px; background: #E8F0FB; color: #1D4E89; font-size: .8125rem; font-weight: 700; }
+.pedido-pe { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.valor-pedido { font-weight: 700; font-variant-numeric: tabular-nums; }
+.pago-tag { margin-left: 6px; padding: 2px 9px; border-radius: 999px; background: #E8F3EC; color: #1F5A39; font-size: .75rem; font-weight: 700; }
+.pedido .pagar { min-height: 46px; }
+.metodos { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.metodos .btn { min-height: 48px; font-size: .9375rem; white-space: normal; line-height: 1.15; }
+.metodos .fantasma { grid-column: 1 / -1; min-height: 40px; }
+.pedido .acoes { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
+.pedido .acoes .fantasma { color: var(--erro); }
+.coluna[data-estado="em_preparacao"] h2::before { background: var(--dende); }
+.coluna[data-estado="por_pagar"] h2::before { background: var(--nevoa); }
+
+/* Mesas */
+.mesas { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.mesa-t { display: grid; gap: 8px; align-content: start; padding: 16px; border-radius: var(--r-m); background: var(--branco); border: 2px solid var(--linha); }
+.mesa-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.mesa-cab strong { font: 800 1.5rem var(--f-titulo); }
+.estado-mesa { font-size: .8125rem; font-weight: 700; color: var(--ok); }
+.mesa-t.pendente { border-color: var(--acento); }
+.mesa-t.pendente .estado-mesa { color: var(--acento); }
+.mesa-t.ocupada { border-color: var(--dende); background: #FFFBF1; }
+.mesa-t.ocupada .estado-mesa { color: var(--dende-escuro); }
+.mesa-t p { font-size: .9375rem; }
+.por-pagar { font-weight: 700; color: var(--erro); }
+.mesa-t .btn { min-height: 46px; }

@@ -49,6 +49,7 @@
     </div>
     <nav class="abas" role="tablist">
       <button role="tab" data-aba="pedidos" aria-selected="true">Pedidos <span id="n-novos" class="badge oculto"></span></button>
+      <button role="tab" data-aba="mesas" class="oculto">Mesas <span id="n-mesas" class="badge cinza oculto"></span></button>
       <button role="tab" data-aba="esgotados">Esgotados <span id="n-esgotados" class="badge cinza oculto"></span></button>
     </nav>
     <div class="direita">
@@ -61,10 +62,15 @@
   <main>
     <section id="aba-pedidos" class="aba">
       <div class="quadro">
-        <div class="coluna" data-estado="novo"><h2>Novos <span class="contagem"></span></h2><ol></ol></div>
-        <div class="coluna" data-estado="a preparar"><h2>A preparar <span class="contagem"></span></h2><ol></ol></div>
+        <div class="coluna" data-estado="novos"><h2>Novos <span class="contagem"></span></h2><ol></ol></div>
+        <div class="coluna" data-estado="em_preparacao"><h2>Em preparação <span class="contagem"></span></h2><ol></ol></div>
         <div class="coluna" data-estado="pronto"><h2>Prontos a servir <span class="contagem"></span></h2><ol></ol></div>
+        <div class="coluna oculto" data-estado="por_pagar"><h2>Entregues por pagar <span class="contagem"></span></h2><ol></ol></div>
       </div>
+    </section>
+    <section id="aba-mesas" class="aba oculto">
+      <p class="mudo explica">Liberta a mesa quando os clientes saírem: os pedidos novos dessa mesa começam do zero.</p>
+      <div id="mesas" class="mesas"></div>
     </section>
     <section id="aba-esgotados" class="aba oculto">
       <p class="mudo explica">Toca num prato quando acabar. Os clientes deixam de o poder pedir e amanhã volta a ficar disponível sozinho.</p>
