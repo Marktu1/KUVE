@@ -9,6 +9,10 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { createStore, slugify } from './store.js';
 import { limparTema, estadoHorario, PADRAO } from '../web/js/temas.js';
+import {
+  ESTADOS, ROTULO_ESTADO, ABERTOS, podeMudar, METODOS, PERMISSOES, PERMISSOES_DA_FUNCAO, permissoesDe,
+  FUNCIONALIDADES, LIMITES, limparPlano, migrar,
+} from './dominio.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -34,6 +38,7 @@ if (process.env.PLATAFORMA_CHAVE) {
   fs.writeFileSync(ficheiro, `Chave do painel da plataforma (/plataforma):\n${chave}\n\nGuarda-a num gestor de palavras-passe e apaga este ficheiro.\n`, { mode: 0o600 });
   console.log(`\nChave do painel da plataforma criada: ${chave}\n(também guardada em ${ficheiro})\n`);
 }
+migrar(db, { novoCodigo: n => crypto.randomBytes(n).toString('base64url').slice(0, n) });
 store.save();
 
 const app = express();
@@ -76,9 +81,15 @@ function membroDaSessao(req, restaurant) {
 // Gerente OU equipa: devolve quem é, para registar no histórico
 function requireEquipa(req, restaurant) {
   const m = membroDaSessao(req, restaurant);
-  if (m) return { papel: 'equipa', nome: m.nome, funcao: m.funcao };
+  if (m) return { papel: 'equipa', nome: m.nome, funcao: m.funcao, permissoes: permissoesDe(m) };
   requireAdmin(req, restaurant);
-  return { papel: 'gerente', nome: 'Gerente' };
+  return { papel: 'gerente', nome: 'Gerente', permissoes: Object.keys(PERMISSOES) };
+}
+// Gerente pode tudo; a equipa só o que o gerente lhe deu
+function requirePermissao(req, restaurant, perm) {
+  const quem = requireEquipa(req, restaurant);
+  if (!quem.permissoes.includes(perm)) throw new HttpError(403, `Não tens permissão para isto (${PERMISSOES[perm].toLowerCase()}). Fala com o gerente.`);
+  return quem;
 }
 
 function requireAdmin(req, restaurant) {
@@ -101,9 +112,37 @@ const idsPratos = r => db.dishes.filter(d => d.restaurantId === r.id).map(d => d
 const temaDe = r => r.tema || limparTema({ cores: { ...PADRAO.cores, acento: r.color } });
 
 const publicRestaurant = r => {
-  const { adminKeyHash, notas, contacto, equipa, tema, temaRascunho, temaHistorico, ...rest } = r;
-  return { ...rest, tema: temaDe(r), identidadeBloqueada: Boolean(r.identidadeBloqueada) };
+  const { adminKeyHash, notas, contacto, equipa, tema, temaRascunho, temaHistorico, mesas, plano, pagoAte, ...rest } = r;
+  return { ...rest, tema: temaDe(r), identidadeBloqueada: Boolean(r.identidadeBloqueada), funcionalidades: planoDe(r).funcionalidades };
 };
+
+// ---------- planos SaaS (configurados no painel da plataforma, guardados na base de dados) ----------
+const planos = () => db.plataforma.planos || [];
+const planoDe = r => planos().find(p => p.id === r.plano) || planos().find(p => p.id === 'teste') || limparPlano({ funcionalidades: Object.keys(FUNCIONALIDADES) });
+const temFuncionalidade = (r, f) => planoDe(r).funcionalidades.includes(f);
+function exigirFuncionalidade(r, f) {
+  if (!temFuncionalidade(r, f)) throw new HttpError(403, `"${FUNCIONALIDADES[f]}" não está incluído no plano ${planoDe(r).nome}. Fala com a equipa Menu 3D para mudar de plano.`);
+}
+function usoDe(r) {
+  const pratos = db.dishes.filter(d => d.restaurantId === r.id);
+  return { pratos: pratos.length, modelos3d: pratos.filter(d => d.modelUrl).length, mesas: (r.mesas || []).length, equipa: (r.equipa || []).length };
+}
+function exigirLimite(r, k, aMais = 1) {
+  const max = planoDe(r).limites[k] ?? 0;
+  if (usoDe(r)[k] + aMais > max) throw new HttpError(403, max ? `O plano ${planoDe(r).nome} permite até ${max} (${LIMITES[k].toLowerCase()}). Fala com a equipa Menu 3D para mudar de plano.` : `${LIMITES[k]} não está incluído no plano ${planoDe(r).nome}.`);
+}
+
+// ---------- mesas ----------
+const novasMesas = n => Array.from({ length: Math.max(0, Math.min(200, n)) }, (_, i) => ({ id: store.id(8), nome: String(i + 1), codigo: crypto.randomBytes(8).toString('base64url').slice(0, 10), ativa: true, criadaEm: now(), libertadaEm: '' }));
+const mesaPorCodigo = (r, codigo) => (r.mesas || []).find(m => m.ativa !== false && m.codigo === codigo);
+function estadoMesa(r, m) {
+  const desde = m.libertadaEm || '';
+  const pedidos = db.orders.filter(o => o.restaurantId === r.id && o.mesaId === m.id && o.createdAt > desde && o.status !== 'cancelado');
+  const abertos = pedidos.filter(o => ABERTOS.includes(o.status));
+  const porPagar = pedidos.filter(o => o.pagamento?.estado !== 'pago').reduce((s, o) => s + o.total, 0);
+  const estado = !pedidos.length ? 'livre' : abertos.some(o => o.status === 'recebido' || o.status === 'confirmado') ? 'pendente' : 'ocupada';
+  return { id: m.id, nome: m.nome, ativa: m.ativa !== false, estado, pedidos: pedidos.length, abertos: abertos.length, porPagar, desde: pedidos[0]?.createdAt || '' };
+}
 
 function exigirAtivo(r) {
   if (r.estado === 'suspenso') throw new HttpError(403, 'Este menu está temporariamente indisponível.');
@@ -186,6 +225,7 @@ app.post('/api/restaurants', wrap(async (req, res) => {
     adminKeyHash: sha(adminKey),
     createdAt: now(),
   };
+  r.mesas = novasMesas(r.tables);
   db.restaurants.push(r);
   store.save();
   res.status(201).json({ restaurant: publicRestaurant(r), adminKey });
@@ -199,7 +239,8 @@ app.get('/api/menu/:slug', wrap(async (req, res) => {
     .filter(d => d.restaurantId === r.id && d.visible !== false)
     .sort((a, b) => a.order - b.order)
     .map(d => ({ ...d, esgotado: esgotado(d) }));
-  res.json({ restaurant: publicRestaurant(r), dishes });
+  const mesa = req.query.m ? mesaPorCodigo(r, str(req.query.m, 20)) : null;
+  res.json({ restaurant: publicRestaurant(r), dishes, mesa: mesa ? { nome: mesa.nome } : null });
 }));
 
 // Vista de administração (inclui pratos ocultos)
@@ -208,7 +249,7 @@ app.get('/api/admin/:id', wrap(async (req, res) => {
   requireAdmin(req, r);
   const dishes = db.dishes.filter(d => d.restaurantId === r.id).sort((a, b) => a.order - b.order)
     .map(d => ({ ...d, esgotado: esgotado(d) }));
-  res.json({ restaurant: publicRestaurant(r), dishes });
+  res.json({ restaurant: publicRestaurant(r), dishes, mesas: r.mesas || [], plano: { ...planoDe(r), pagoAte: r.pagoAte || '', estado: r.estado || 'ativo', uso: usoDe(r) } });
 }));
 
 app.put('/api/restaurants/:id', wrap(async (req, res) => {
@@ -280,6 +321,7 @@ app.post('/api/restaurants/:id/upload/:kind', (req, res, next) => {
     requireAdmin(req, r);
     const kind = req.params.kind;
     if (!ALLOWED[kind]) throw new HttpError(400, 'Tipo de upload desconhecido.');
+    if (kind === 'target') exigirFuncionalidade(r, 'impresso');
     req.uploadScope = r.id;
     uploader(kind).single('file')(req, res, err => {
       if (err) return next(err.code === 'LIMIT_FILE_SIZE' ? new HttpError(413, `Ficheiro maior que ${LIMITS[kind]} MB.`) : err);
@@ -321,6 +363,8 @@ app.post('/api/restaurants/:id/dishes', wrap(async (req, res) => {
   requireAdmin(req, r);
   const d = cleanDish(req.body);
   if (!d.name) throw new HttpError(400, 'Indica o nome do prato.');
+  exigirLimite(r, 'pratos');
+  if (d.modelUrl) exigirLimite(r, 'modelos3d');
   d.id = store.id();
   d.restaurantId = r.id;
   d.order = d.order || db.dishes.filter(x => x.restaurantId === r.id).length + 1;
@@ -339,8 +383,10 @@ function findDishAdmin(req) {
 }
 
 app.put('/api/dishes/:dishId', wrap(async (req, res) => {
-  const { d } = findDishAdmin(req);
-  Object.assign(d, cleanDish(req.body, d), { updatedAt: now() });
+  const { d, r } = findDishAdmin(req);
+  const novo = cleanDish(req.body, d);
+  if (novo.modelUrl && !d.modelUrl) exigirLimite(r, 'modelos3d');
+  Object.assign(d, novo, { updatedAt: now() });
   store.save();
   res.json({ dish: { ...d, esgotado: esgotado(d) } });
 }));
@@ -358,6 +404,13 @@ app.delete('/api/dishes/:dishId', wrap(async (req, res) => {
 app.post('/api/menu/:slug/orders', wrap(async (req, res) => {
   const r = findRestaurant(req.params.slug);
   exigirAtivo(r);
+  exigirFuncionalidade(r, 'pedidos');
+  // o mesmo envio repetido (duplo toque, rede lenta) devolve o pedido já criado
+  const chave = str(req.body.chave, 40);
+  if (chave) {
+    const ja = db.orders.find(o => o.restaurantId === r.id && o.chave === chave && Date.now() - Date.parse(o.createdAt) < 24 * 3600e3);
+    if (ja) return res.status(200).json({ order: pedidoParaCliente(ja), acompanhar: urlAcompanhar(r, ja), whatsappUrl: '', repetido: true });
+  }
   const items = Array.isArray(req.body.items) ? req.body.items.slice(0, 50) : [];
   if (!items.length) throw new HttpError(400, 'O pedido está vazio.');
   const horario = temaDe(r).horario;
@@ -374,18 +427,26 @@ app.post('/api/menu/:slug/orders', wrap(async (req, res) => {
     const unit = variant ? variant.price : d.price; // preço vem sempre do servidor
     return { dishId: d.id, name: d.name, variant: variant ? variant.name : '', qty, unit, subtotal: unit * qty };
   });
+  // mesa: pelo código secreto do QR; o número escrito no link só vale se o restaurante não tiver mesas configuradas
+  const mesa = req.body.mesaCodigo ? mesaPorCodigo(r, str(req.body.mesaCodigo, 20)) : null;
+  if (req.body.mesaCodigo && !mesa) throw new HttpError(400, 'Este QR já não corresponde a uma mesa. Pede ajuda à equipa.');
   const order = {
-    id: store.id(8),
+    id: store.id(10),
     number: db.orders.filter(o => o.restaurantId === r.id).length + 1,
     restaurantId: r.id,
-    table: str(req.body.table, 10),
+    chave,
+    segredo: crypto.randomBytes(12).toString('base64url'),
+    mesaId: mesa ? mesa.id : '',
+    table: mesa ? mesa.nome : str(req.body.table, 10),
+    mesaVerificada: Boolean(mesa),
+    pagamento: { estado: 'por_pagar' },
     customerName: str(req.body.customerName, 60),
     note: str(req.body.note, 300),
     items: lines,
     total: lines.reduce((s, l) => s + l.subtotal, 0),
-    status: 'novo',
+    status: 'recebido',
     createdAt: now(),
-    historico: [{ estado: 'novo', por: 'Cliente', em: now() }],
+    historico: [{ estado: 'recebido', por: 'Cliente', em: now() }],
   };
   db.orders.push(order);
   registar(r.id, 'pedidos');
@@ -400,8 +461,22 @@ app.post('/api/menu/:slug/orders', wrap(async (req, res) => {
     order.customerName ? `Nome: ${order.customerName}` : '',
     order.note ? `Nota: ${order.note}` : '',
   ].filter(Boolean).join('\n');
-  const whatsappUrl = r.whatsapp ? `https://wa.me/${r.whatsapp}?text=${encodeURIComponent(text)}` : '';
-  res.status(201).json({ order, whatsappUrl });
+  const whatsappUrl = r.whatsapp ? `https://wa.me/${r.whatsapp}?text=${encodeURIComponent(text + `\nAcompanhar: ${PUBLIC_URL}${urlAcompanhar(r, order)}`)}` : '';
+  res.status(201).json({ order: pedidoParaCliente(order), acompanhar: urlAcompanhar(r, order), whatsappUrl });
+}));
+
+// O cliente acompanha o pedido com um link secreto (sem conta)
+const urlAcompanhar = (r, o) => `/m/${r.slug}/pedido/${o.id}?t=${o.segredo}`;
+const pedidoParaCliente = o => ({
+  id: o.id, number: o.number, table: o.table, items: o.items, total: o.total, note: o.note, customerName: o.customerName,
+  status: o.status, rotulo: ROTULO_ESTADO[o.status], createdAt: o.createdAt, pago: o.pagamento?.estado === 'pago',
+  linhaTempo: (o.historico || []).map(h => ({ estado: h.estado, rotulo: ROTULO_ESTADO[h.estado] || h.estado, em: h.em })),
+});
+app.get('/api/pedido/:orderId', wrap(async (req, res) => {
+  const o = db.orders.find(x => x.id === req.params.orderId);
+  if (!o || !o.segredo || str(req.query.t, 40) !== o.segredo) throw new HttpError(404, 'Pedido não encontrado.');
+  const r = findRestaurant(o.restaurantId);
+  res.set('Cache-Control', 'no-store').json({ order: pedidoParaCliente(o), restaurante: { nome: r.name, slug: r.slug, moeda: r.currency, logoUrl: r.logoUrl, tema: temaDe(r) } });
 }));
 
 // Eventos anónimos do menu do cliente (para o painel da plataforma)
@@ -424,32 +499,132 @@ app.post('/api/menu/:slug/evento', wrap(async (req, res) => {
 
 app.get('/api/restaurants/:id/orders', wrap(async (req, res) => {
   const r = findRestaurant(req.params.id);
-  requireEquipa(req, r);
+  requirePermissao(req, r, 'pedidos');
   const since = Date.now() - 36 * 3600 * 1000;
   const orders = db.orders
     .filter(o => o.restaurantId === r.id && Date.parse(o.createdAt) > since)
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  res.json({ orders });
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .map(({ segredo, chave, ...o }) => ({ ...o, rotulo: ROTULO_ESTADO[o.status] }));
+  res.json({ orders, estados: ROTULO_ESTADO });
 }));
 
 app.patch('/api/orders/:orderId', wrap(async (req, res) => {
   const o = db.orders.find(x => x.id === req.params.orderId);
   if (!o) throw new HttpError(404, 'Pedido não encontrado.');
-  const quem = requireEquipa(req, findRestaurant(o.restaurantId));
-  if (!['novo', 'a preparar', 'pronto', 'entregue', 'cancelado'].includes(req.body.status)) {
-    throw new HttpError(400, 'Estado inválido.');
-  }
-  o.status = req.body.status;
+  const r = findRestaurant(o.restaurantId);
+  const para = req.body.status;
+  const quem = requirePermissao(req, r, para === 'cancelado' ? 'cancelar' : 'pedidos');
+  if (!ESTADOS.includes(para)) throw new HttpError(400, 'Estado inválido.');
+  if (!podeMudar(o.status, para)) throw new HttpError(409, `Um pedido "${ROTULO_ESTADO[o.status]}" não pode passar a "${ROTULO_ESTADO[para]}".`);
+  if (para === 'cancelado' && o.pagamento?.estado === 'pago') throw new HttpError(409, 'Este pedido já foi pago. Anula o pagamento antes de cancelar.');
+  o.status = para;
   o.updatedAt = now();
   (o.historico ||= []).push({ estado: o.status, por: quem.nome, em: now() });
   store.save();
-  res.json({ order: o });
+  const { segredo, chave, ...pub } = o;
+  res.json({ order: { ...pub, rotulo: ROTULO_ESTADO[o.status] } });
+}));
+
+// ---------- pagamentos (registo manual de quem recebeu; não é faturação) ----------
+app.post('/api/orders/:orderId/pagamento', wrap(async (req, res) => {
+  const o = db.orders.find(x => x.id === req.params.orderId);
+  if (!o) throw new HttpError(404, 'Pedido não encontrado.');
+  const r = findRestaurant(o.restaurantId);
+  exigirFuncionalidade(r, 'pagamentos');
+  const quem = requirePermissao(req, r, 'pagamentos');
+  if (o.status === 'cancelado') throw new HttpError(409, 'Não se regista pagamento num pedido cancelado.');
+  if (o.pagamento?.estado === 'pago') throw new HttpError(409, 'Este pedido já está pago.');
+  if (!Object.hasOwn(METODOS, req.body.metodo)) throw new HttpError(400, 'Escolhe como foi pago.');
+  o.pagamento = { estado: 'pago', metodo: req.body.metodo, valor: o.total, em: now(), por: quem.nome };
+  registar(r.id, 'pago', o.total);
+  store.save();
+  res.json({ pagamento: o.pagamento });
+}));
+app.delete('/api/orders/:orderId/pagamento', wrap(async (req, res) => {
+  const o = db.orders.find(x => x.id === req.params.orderId);
+  if (!o) throw new HttpError(404, 'Pedido não encontrado.');
+  const r = findRestaurant(o.restaurantId);
+  requireAdmin(req, r); // anular um pagamento é só para o gerente
+  if (o.pagamento?.estado !== 'pago') throw new HttpError(409, 'Este pedido não está pago.');
+  registar(r.id, 'pago', -o.pagamento.valor);
+  (o.pagamentosAnulados ||= []).push({ ...o.pagamento, anuladoEm: now() });
+  o.pagamento = { estado: 'por_pagar' };
+  store.save();
+  res.json({ pagamento: o.pagamento });
+}));
+
+// ---------- mesas ----------
+app.get('/api/restaurants/:id/mesas', wrap(async (req, res) => {
+  const r = findRestaurant(req.params.id);
+  const quem = requirePermissao(req, r, 'mesas');
+  const lista = (r.mesas || []).map(m => ({ ...estadoMesa(r, m), ...(quem.papel === 'gerente' ? { codigo: m.codigo } : {}) }));
+  res.json({ mesas: lista });
+}));
+app.post('/api/restaurants/:id/mesas', wrap(async (req, res) => {
+  const r = findRestaurant(req.params.id);
+  requireAdmin(req, r);
+  exigirFuncionalidade(r, 'mesas');
+  const nomes = (Array.isArray(req.body.nomes) ? req.body.nomes : [req.body.nome]).map(n => str(n, 20)).filter(Boolean);
+  if (!nomes.length) throw new HttpError(400, 'Indica o nome ou número da mesa.');
+  exigirLimite(r, 'mesas', nomes.length);
+  const criadas = [];
+  for (const nome of nomes) {
+    if ((r.mesas || []).some(m => m.nome.toLowerCase() === nome.toLowerCase())) continue;
+    const m = { id: store.id(8), nome, codigo: crypto.randomBytes(8).toString('base64url').slice(0, 10), ativa: true, criadaEm: now(), libertadaEm: '' };
+    (r.mesas ||= []).push(m); criadas.push(m);
+  }
+  r.tables = r.mesas.length;
+  store.save();
+  res.status(201).json({ mesas: r.mesas, criadas: criadas.length });
+}));
+app.patch('/api/restaurants/:id/mesas/:mesaId', wrap(async (req, res) => {
+  const r = findRestaurant(req.params.id);
+  requireAdmin(req, r);
+  const m = (r.mesas || []).find(x => x.id === req.params.mesaId);
+  if (!m) throw new HttpError(404, 'Mesa não encontrada.');
+  if (req.body.nome !== undefined) {
+    const nome = str(req.body.nome, 20);
+    if (!nome) throw new HttpError(400, 'A mesa precisa de um nome.');
+    if (r.mesas.some(x => x !== m && x.nome.toLowerCase() === nome.toLowerCase())) throw new HttpError(409, 'Já existe uma mesa com esse nome.');
+    m.nome = nome;
+  }
+  if (req.body.ativa !== undefined) m.ativa = Boolean(req.body.ativa);
+  if (req.body.novoCodigo) m.codigo = crypto.randomBytes(8).toString('base64url').slice(0, 10); // o QR antigo deixa de funcionar
+  store.save();
+  res.json({ mesa: m });
+}));
+app.delete('/api/restaurants/:id/mesas/:mesaId', wrap(async (req, res) => {
+  const r = findRestaurant(req.params.id);
+  requireAdmin(req, r);
+  const m = (r.mesas || []).find(x => x.id === req.params.mesaId);
+  if (!m) throw new HttpError(404, 'Mesa não encontrada.');
+  if (estadoMesa(r, m).abertos) throw new HttpError(409, 'Esta mesa tem pedidos em curso. Termina-os antes de a apagar.');
+  r.mesas = r.mesas.filter(x => x !== m);
+  r.tables = r.mesas.length;
+  store.save();
+  res.json({ ok: true });
+}));
+// Fim do serviço: a mesa volta a ficar livre para os próximos clientes
+app.post('/api/restaurants/:id/mesas/:mesaId/libertar', wrap(async (req, res) => {
+  const r = findRestaurant(req.params.id);
+  const quem = requirePermissao(req, r, 'mesas');
+  const m = (r.mesas || []).find(x => x.id === req.params.mesaId);
+  if (!m) throw new HttpError(404, 'Mesa não encontrada.');
+  const e = estadoMesa(r, m);
+  if (!req.body?.mesmoAssim && (e.abertos || e.porPagar)) {
+    throw new HttpError(409, e.abertos ? `A mesa tem ${e.abertos} pedido(s) por entregar.` : `A mesa tem ${e.porPagar.toLocaleString('pt-PT')} ${r.currency} por pagar.`);
+  }
+  m.libertadaEm = now();
+  m.libertadaPor = quem.nome;
+  store.save();
+  res.json({ mesa: estadoMesa(r, m) });
 }));
 
 // ---------- equipa (PINs) ----------
 const FUNCOES = ['rececao', 'cozinha', 'empregado'];
 const pinHash = (rid, pin) => sha(`${rid}:${pin}`);
-const membroPublico = m => ({ id: m.id, nome: m.nome, funcao: m.funcao, ativo: m.ativo !== false, criadoEm: m.criadoEm, ultimaEntrada: m.ultimaEntrada || '' });
+const membroPublico = m => ({ id: m.id, nome: m.nome, funcao: m.funcao, permissoes: permissoesDe(m), ativo: m.ativo !== false, criadoEm: m.criadoEm, ultimaEntrada: m.ultimaEntrada || '' });
+const limparPermissoes = l => (Array.isArray(l) ? [...new Set(l.filter(p => Object.hasOwn(PERMISSOES, p)))] : undefined);
 
 function novoPin(r) {
   for (;;) {
@@ -465,7 +640,7 @@ function terminarSessoes(rid, membroId) {
 app.get('/api/restaurants/:id/equipa', wrap(async (req, res) => {
   const r = findRestaurant(req.params.id);
   requireAdmin(req, r);
-  res.json({ equipa: (r.equipa || []).map(membroPublico) });
+  res.json({ equipa: (r.equipa || []).map(membroPublico), permissoes: PERMISSOES, porFuncao: PERMISSOES_DA_FUNCAO });
 }));
 
 app.post('/api/restaurants/:id/equipa', wrap(async (req, res) => {
@@ -473,9 +648,11 @@ app.post('/api/restaurants/:id/equipa', wrap(async (req, res) => {
   requireAdmin(req, r);
   const nome = str(req.body.nome, 40);
   if (!nome) throw new HttpError(400, 'Indica o nome do funcionário.');
-  if ((r.equipa || []).length >= 50) throw new HttpError(400, 'Máximo de 50 pessoas na equipa.');
+  exigirFuncionalidade(r, 'equipa');
+  exigirLimite(r, 'equipa');
   const pin = novoPin(r);
-  const m = { id: store.id(8), nome, funcao: FUNCOES.includes(req.body.funcao) ? req.body.funcao : 'rececao', pinHash: pinHash(r.id, pin), ativo: true, criadoEm: now() };
+  const funcao = FUNCOES.includes(req.body.funcao) ? req.body.funcao : 'rececao';
+  const m = { id: store.id(8), nome, funcao, permissoes: limparPermissoes(req.body.permissoes) || PERMISSOES_DA_FUNCAO[funcao], pinHash: pinHash(r.id, pin), ativo: true, criadoEm: now() };
   (r.equipa ||= []).push(m);
   store.save();
   res.status(201).json({ membro: membroPublico(m), pin });
@@ -488,6 +665,7 @@ app.patch('/api/restaurants/:id/equipa/:membroId', wrap(async (req, res) => {
   if (!m) throw new HttpError(404, 'Funcionário não encontrado.');
   if (req.body.nome !== undefined) m.nome = str(req.body.nome, 40) || m.nome;
   if (FUNCOES.includes(req.body.funcao)) m.funcao = req.body.funcao;
+  if (limparPermissoes(req.body.permissoes)) m.permissoes = limparPermissoes(req.body.permissoes);
   if (req.body.ativo !== undefined) { m.ativo = Boolean(req.body.ativo); if (!m.ativo) terminarSessoes(r.id, m.id); }
   store.save();
   res.json({ membro: membroPublico(m) });
@@ -536,7 +714,8 @@ app.post('/api/equipa/entrar', wrap(async (req, res) => {
   store.save();
   res.json({
     token,
-    membro: { nome: m.nome, funcao: m.funcao },
+    membro: { nome: m.nome, funcao: m.funcao, permissoes: permissoesDe(m) },
+    funcionalidades: planoDe(r).funcionalidades,
     restaurante: { id: r.id, slug: r.slug, nome: r.name, cor: r.color, logoUrl: r.logoUrl, moeda: r.currency },
   });
 }));
@@ -553,7 +732,7 @@ app.get('/api/equipa/:id/pratos', wrap(async (req, res) => {
 app.put('/api/dishes/:dishId/esgotado', wrap(async (req, res) => {
   const d = db.dishes.find(x => x.id === req.params.dishId);
   if (!d) throw new HttpError(404, 'Prato não encontrado.');
-  requireEquipa(req, findRestaurant(d.restaurantId));
+  requirePermissao(req, findRestaurant(d.restaurantId), 'esgotados');
   d.esgotadoEm = req.body.esgotado ? hoje() : '';
   store.save();
   res.json({ esgotado: esgotado(d) });
@@ -566,6 +745,7 @@ const DIAS_SEMANA = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };
 app.get('/api/restaurants/:id/painel', wrap(async (req, res) => {
   const r = findRestaurant(req.params.id);
   requireAdmin(req, r);
+  exigirFuncionalidade(r, 'painel');
   const n = [7, 30, 90].includes(Number(req.query.dias)) ? Number(req.query.dias) : 30;
   const dias = diasAtras(n);
   const antes = diasAtras(2 * n).slice(0, n);
@@ -579,8 +759,11 @@ app.get('/api/restaurants/:id/painel', wrap(async (req, res) => {
   const somaStat = (ds, k) => ds.reduce((s, d) => s + (st[d]?.[k] || 0), 0);
   const cancelados = db.orders.filter(o => o.restaurantId === r.id && o.status === 'cancelado' && noPeriodo.has(diaDe(o.createdAt))).length;
 
+  const pagos = p => p.filter(o => o.pagamento?.estado === 'pago');
   const resumo = p => ({
     vendas: soma(p, o => o.total), pedidos: p.length,
+    pago: soma(pagos(p), o => o.pagamento.valor), pedidosPagos: pagos(p).length,
+    porPagar: soma(p.filter(o => o.pagamento?.estado !== 'pago'), o => o.total),
     ticket: p.length ? Math.round(soma(p, o => o.total) / p.length) : 0,
   });
   const atual = resumo(pedidos), anterior = resumo(pedidosAntes);
@@ -588,8 +771,12 @@ app.get('/api/restaurants/:id/painel', wrap(async (req, res) => {
 
   // série diária
   const porDia = {};
-  for (const o of pedidos) { const d = diaDe(o.createdAt); (porDia[d] ||= { vendas: 0, pedidos: 0 }); porDia[d].vendas += o.total; porDia[d].pedidos++; }
-  const serie = dias.map(d => ({ dia: d, vendas: porDia[d]?.vendas || 0, pedidos: porDia[d]?.pedidos || 0, visitas: st[d]?.visitas || 0 }));
+  for (const o of pedidos) { const d = diaDe(o.createdAt); (porDia[d] ||= { vendas: 0, pedidos: 0, pago: 0 }); porDia[d].vendas += o.total; porDia[d].pedidos++; if (o.pagamento?.estado === 'pago') porDia[d].pago += o.pagamento.valor; }
+  const serie = dias.map(d => ({ dia: d, vendas: porDia[d]?.vendas || 0, pago: porDia[d]?.pago || 0, pedidos: porDia[d]?.pedidos || 0, visitas: st[d]?.visitas || 0 }));
+  const hojeD = hoje();
+  const deHoje = doRest.filter(o => diaDe(o.createdAt) === hojeD);
+  const metodos = {};
+  for (const o of pagos(pedidos)) metodos[o.pagamento.metodo] = (metodos[o.pagamento.metodo] || 0) + o.pagamento.valor;
 
   // pratos: vendidos, vistos, aberturas em AR
   const pratosRest = db.dishes.filter(d => d.restaurantId === r.id);
@@ -625,6 +812,9 @@ app.get('/api/restaurants/:id/painel', wrap(async (req, res) => {
     efeito3d: { com: grupo(x => x.com3d), sem: grupo(x => !x.com3d) },
     mapa,
     mesas: Object.values(mesas).sort((a, b) => b.vendas - a.vendas).slice(0, 8),
+    hoje: { ...resumo(deHoje), pendentes: deHoje.filter(o => o.status === 'recebido' || o.status === 'confirmado').length, emCurso: deHoje.filter(o => ABERTOS.includes(o.status)).length },
+    metodos: Object.entries(metodos).map(([k, v]) => ({ metodo: METODOS[k] || k, valor: v })),
+    funcPagamentos: temFuncionalidade(r, 'pagamentos'),
   });
 }));
 
@@ -632,7 +822,10 @@ app.get('/api/restaurants/:id/painel', wrap(async (req, res) => {
 app.get('/api/menu/:slug/qr.svg', wrap(async (req, res) => {
   const r = findRestaurant(req.params.slug);
   const table = str(req.query.mesa, 10);
-  const target = req.query.tipo === 'impresso' ? `${PUBLIC_URL}/p/${r.slug}` : `${PUBLIC_URL}/m/${r.slug}${table ? `?mesa=${encodeURIComponent(table)}` : ''}`;
+  const codigo = str(req.query.m, 20);
+  const target = req.query.tipo === 'impresso' ? `${PUBLIC_URL}/p/${r.slug}`
+    : codigo ? `${PUBLIC_URL}/m/${r.slug}?m=${encodeURIComponent(codigo)}`
+    : `${PUBLIC_URL}/m/${r.slug}${table ? `?mesa=${encodeURIComponent(table)}` : ''}`;
   const svg = await QRCode.toString(target, { type: 'svg', margin: 1, errorCorrectionLevel: 'M', color: { dark: '#1C2321', light: '#FFFFFF' } });
   res.type('image/svg+xml').set('Cache-Control', 'public, max-age=3600').send(svg);
 }));
@@ -643,6 +836,7 @@ app.post('/api/restaurants/:id/ai-jobs', (req, res, next) => {
   try {
     const r = findRestaurant(req.params.id);
     requireAdmin(req, r);
+    exigirFuncionalidade(r, 'ia3d');
     req.uploadScope = r.id;
     multer({
       storage: multer.diskStorage({
@@ -721,8 +915,8 @@ app.post('/api/worker/jobs/:jobId/result', (req, res, next) => {
 });
 
 // ---------- painel da plataforma (dono do Menu 3D) ----------
-const PLANOS = ['teste', 'essencial', 'profissional', 'gratis'];
-const ESTADOS = ['ativo', 'suspenso'];
+const planoExiste = id => planos().some(p => p.id === id);
+const ESTADOS_CONTA = ['ativo', 'suspenso'];
 
 function diasAtras(n) {
   const out = [];
@@ -732,7 +926,7 @@ function diasAtras(n) {
 
 function somaStats(rid, dias) {
   const s = db.stats[rid] || {};
-  const t = { visitas: 0, pratosVistos: 0, ar: 0, impresso: 0, pedidos: 0, receita: 0 };
+  const t = { visitas: 0, pratosVistos: 0, ar: 0, impresso: 0, pedidos: 0, receita: 0, pago: 0 };
   for (const d of dias) for (const k in t) t[k] += s[d]?.[k] || 0;
   return t;
 }
@@ -765,7 +959,8 @@ function linhaRestaurante(r, dias30, espaco) {
     id: r.id, slug: r.slug, nome: r.name, logoUrl: r.logoUrl, cor: r.color, moeda: r.currency,
     whatsapp: r.whatsapp, contacto: r.contacto || '', notas: r.notas || '',
     estado: r.estado || 'ativo', plano: r.plano || 'teste', pagoAte: r.pagoAte || '',
-    criadoEm: r.createdAt, mesas: r.tables,
+    criadoEm: r.createdAt, mesas: (r.mesas || []).length,
+    planoNome: planoDe(r).nome, precoMensal: planoDe(r).precoMensal, uso: usoDe(r), limites: planoDe(r).limites,
     pratos: pratos.length, pratos3d: pratos.filter(d => d.modelUrl).length,
     menuImpresso: Boolean(r.print?.mindUrl),
     ultimoPedido: ultimo, ultimaAtividade: atividade,
@@ -805,7 +1000,11 @@ app.get('/api/plataforma/resumo', wrap(async (req, res) => {
   }));
   res.json({
     geradoEm: now(),
+    planos: planos(),
+    funcionalidades: FUNCIONALIDADES, limitesNomes: LIMITES,
     totais: {
+      // receita mensal recorrente estimada: soma dos planos dos restaurantes ativos e com pagamento em dia
+      mrr: restaurantes.filter(r => r.estado === 'ativo' && (!r.pagoAte || r.pagoAte >= hoje())).reduce((s, r) => s + r.precoMensal, 0),
       restaurantes: restaurantes.length,
       ativos: restaurantes.filter(r => r.estado === 'ativo').length,
       suspensos: restaurantes.filter(r => r.estado === 'suspenso').length,
@@ -844,11 +1043,12 @@ app.post('/api/plataforma/restaurantes', wrap(async (req, res) => {
     tables: Math.min(200, Math.max(1, num(req.body.tables, 10))),
     categories: ['Entradas', 'Pratos principais', 'Sobremesas', 'Bebidas'],
     print: { imageUrl: '', mindUrl: '', width: 0, height: 0, hotspots: [] },
-    estado: 'ativo', plano: PLANOS.includes(req.body.plano) ? req.body.plano : 'teste',
+    estado: 'ativo', plano: planoExiste(req.body.plano) ? req.body.plano : 'teste',
     pagoAte: /^\d{4}-\d{2}-\d{2}$/.test(req.body.pagoAte || '') ? req.body.pagoAte : new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10),
     notas: str(req.body.notas, 1000), contacto: str(req.body.contacto, 120),
     adminKeyHash: sha(adminKey), createdAt: now(),
   };
+  r.mesas = novasMesas(r.tables);
   db.restaurants.push(r);
   store.save();
   res.status(201).json({ restaurante: linhaRestaurante(r, diasAtras(30), espacoPorRestaurante()), adminKey });
@@ -858,8 +1058,8 @@ app.patch('/api/plataforma/restaurantes/:id', wrap(async (req, res) => {
   requirePlataforma(req);
   const r = findRestaurant(req.params.id);
   const b = req.body || {};
-  if (b.estado !== undefined) { if (!ESTADOS.includes(b.estado)) throw new HttpError(400, 'Estado inválido.'); r.estado = b.estado; }
-  if (b.plano !== undefined) { if (!PLANOS.includes(b.plano)) throw new HttpError(400, 'Plano inválido.'); r.plano = b.plano; }
+  if (b.estado !== undefined) { if (!ESTADOS_CONTA.includes(b.estado)) throw new HttpError(400, 'Estado inválido.'); r.estado = b.estado; }
+  if (b.plano !== undefined) { if (!planoExiste(b.plano)) throw new HttpError(400, 'Plano inválido.'); r.plano = b.plano; }
   if (b.pagoAte !== undefined) {
     if (b.pagoAte && !/^\d{4}-\d{2}-\d{2}$/.test(b.pagoAte)) throw new HttpError(400, 'Data inválida (AAAA-MM-DD).');
     r.pagoAte = b.pagoAte;
@@ -884,6 +1084,30 @@ app.post('/api/plataforma/ia/:jobId/repetir', wrap(async (req, res) => {
   const j = db.aiJobs.find(x => x.id === req.params.jobId);
   if (!j) throw new HttpError(404, 'Trabalho não encontrado.');
   Object.assign(j, { status: 'na fila', error: '', attempts: 0, resultUrl: '' });
+  store.save();
+  res.json({ ok: true });
+}));
+
+// ---------- planos (só a plataforma) ----------
+app.get('/api/plataforma/planos', wrap(async (req, res) => {
+  requirePlataforma(req);
+  res.json({ planos: planos(), funcionalidades: FUNCIONALIDADES, limites: LIMITES, uso: Object.fromEntries(planos().map(p => [p.id, db.restaurants.filter(r => r.plano === p.id).length])) });
+}));
+app.put('/api/plataforma/planos/:planoId', wrap(async (req, res) => {
+  requirePlataforma(req);
+  const atual = planos().find(p => p.id === req.params.planoId);
+  const plano = limparPlano(req.body || {}, atual || { id: req.params.planoId });
+  if (!plano.id) throw new HttpError(400, 'Identificador do plano inválido.');
+  if (atual) Object.assign(atual, plano); else db.plataforma.planos.push(plano);
+  store.save();
+  res.json({ plano });
+}));
+app.delete('/api/plataforma/planos/:planoId', wrap(async (req, res) => {
+  requirePlataforma(req);
+  if (['teste'].includes(req.params.planoId)) throw new HttpError(400, 'O plano de teste é usado pelos restaurantes novos e não pode ser apagado.');
+  const usam = db.restaurants.filter(r => r.plano === req.params.planoId).length;
+  if (usam) throw new HttpError(409, `${usam} restaurante(s) usam este plano. Muda-os de plano primeiro, ou desativa-o.`);
+  db.plataforma.planos = planos().filter(p => p.id !== req.params.planoId);
   store.save();
   res.json({ ok: true });
 }));

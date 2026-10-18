@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server/index.js",
     "build": "node scripts/build.mjs",
-    "dev": "node --watch server/index.js"
+    "dev": "node --watch server/index.js",
+    "test": "node --test test/*.test.mjs",
+    "demo": "node scripts/demo.mjs"
   },
   "author": "Marcos Zola Daniel João",
   "license": "UNLICENSED",
