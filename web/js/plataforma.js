@@ -14,7 +14,8 @@ const hojeIso = () => new Date().toISOString().slice(0, 10);
 const data = iso => iso ? new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 const bytes = b => b > 1e9 ? `${(b / 1e9).toFixed(1)} GB` : b > 1e6 ? `${(b / 1e6).toFixed(1)} MB` : `${Math.round(b / 1e3)} KB`;
 const ICONE = id => `<svg class="ic" aria-hidden="true"><use href="/img/icones.svg#${id}"/></svg>`;
-const PLANO = { teste: 'Teste', essencial: 'Essencial', profissional: 'Profissional', gratis: 'Grátis' };
+let planosData = { planos: [], funcionalidades: {}, limites: {}, uso: {} };
+const nomePlano = id => planosData.planos.find(p => p.id === id)?.nome || id;
 
 async function api(caminho, { method = 'GET', body } = {}) {
   const res = await fetch(caminho, {
@@ -56,14 +57,15 @@ async function iniciar() {
 
 async function carregar() {
   try {
-    dados = await api('/api/plataforma/resumo');
+    [dados, planosData] = await Promise.all([api('/api/plataforma/resumo'), api('/api/plataforma/planos')]);
     pintar();
+    pintarPlanos();
   } catch (err) { toast(err.message); }
 }
 
 function estadoPagamento(r) {
   if (r.estado === 'suspenso') return 'suspenso';
-  if (r.plano !== 'gratis' && r.pagoAte && r.pagoAte < hojeIso()) return 'atraso';
+  if (r.precoMensal > 0 && r.pagoAte && r.pagoAte < hojeIso()) return 'atraso';
   return 'ativo';
 }
 
@@ -201,8 +203,8 @@ function pintarTabela() {
     <tr data-id="${r.id}">
       <td><div class="rest">${avatar(r)}<span><strong>${esc(r.nome)}${amostraTema(r)}</strong><small>/${esc(r.slug)}${r.contacto ? ` · ${esc(r.contacto)}` : ''}</small></span></div></td>
       <td>${pilulaEstado(r)}</td>
-      <td>${PLANO[r.plano] || r.plano}</td>
-      <td class="${estadoPagamento(r) === 'atraso' ? 'atrasado' : ''}">${r.plano === 'gratis' ? '—' : data(r.pagoAte)}</td>
+      <td>${esc(r.planoNome || nomePlano(r.plano))}${r.precoMensal ? `<small class="sec-tab">${n(r.precoMensal)} Kz/mês</small>` : ''}</td>
+      <td class="${estadoPagamento(r) === 'atraso' ? 'atrasado' : ''}">${r.precoMensal ? data(r.pagoAte) : '—'}</td>
       <td class="num">${r.pratos3d}/${r.pratos}</td>
       <td class="num">${n(r.visitas)}</td>
       <td class="num">${n(r.ar + r.impresso)}</td>
@@ -263,7 +265,7 @@ function abrirGaveta(id) {
   ].map(([t, v]) => `<div><dt>${t}</dt><dd>${v}</dd></div>`).join('');
   estadoEscolhido = r.estado;
   pintarEstado();
-  f.plano.value = r.plano;
+  preencherPlanos(f.plano, r.plano);
   f.pagoAte.value = r.pagoAte || '';
   f.contacto.value = r.contacto || '';
   f.notas.value = r.notas || '';
@@ -323,6 +325,7 @@ $('#g-estudio').addEventListener('click', () => {
 // ---------------- novo restaurante ----------------
 $('#novo').addEventListener('click', () => {
   $('#f-novo').reset();
+  preencherPlanos($('#f-novo').plano, 'teste');
   const d = new Date(); d.setDate(d.getDate() + 30);
   $('#f-novo').pagoAte.value = d.toISOString().slice(0, 10);
   $('#novo-resultado').classList.add('oculto');
@@ -346,3 +349,73 @@ $('#novo-criar').addEventListener('click', async e => {
 
 // ---------------- arranque ----------------
 if (chave) iniciar(); else $('#entrada').classList.remove('oculto');
+
+// ---------------- planos ----------------
+function preencherPlanos(select, atual) {
+  select.innerHTML = planosData.planos.filter(p => p.ativo || p.id === atual)
+    .map(p => `<option value="${esc(p.id)}">${esc(p.nome)}${p.precoMensal ? ` · ${n(p.precoMensal)} Kz/mês` : ''}${p.ativo ? '' : ' (desativado)'}</option>`).join('');
+  select.value = atual;
+}
+
+function pintarPlanos() {
+  const ativos = dados.restaurantes.filter(r => r.estado !== 'suspenso');
+  const mrr = ativos.reduce((s, r) => s + (r.precoMensal || 0), 0);
+  $('#mrr').textContent = `Mensalidades dos restaurantes ativos: ${n(mrr)} Kz/mês (valor de referência; o recebimento regista-se em "Pago até").`;
+  const F = planosData.funcionalidades;
+  $('#planos-linhas').innerHTML = planosData.planos.map(p => `
+    <tr class="${p.ativo ? '' : 'inativo'}">
+      <td><strong>${esc(p.nome)}</strong>${p.ativo ? '' : ' <span class="pilula">desativado</span>'}</td>
+      <td class="num">${p.precoMensal ? n(p.precoMensal) : 'grátis'}</td>
+      <td class="num">${n(p.limites.pratos)}</td><td class="num">${n(p.limites.modelos3d)}</td>
+      <td class="num">${p.limites.mesas || '—'}</td><td class="num">${p.limites.equipa || '—'}</td>
+      <td class="funcs-tab">${p.funcionalidades.length === Object.keys(F).length ? 'Todas' : p.funcionalidades.map(f => esc(F[f])).join(' · ') || '—'}</td>
+      <td class="num">${n(planosData.uso[p.id] || 0)}</td>
+      <td><button class="btn secundario pequeno" data-plano="${esc(p.id)}">Editar</button></td>
+    </tr>`).join('');
+}
+
+let planoAberto = null;
+function abrirPlano(id) {
+  const p = planosData.planos.find(x => x.id === id);
+  planoAberto = p || null;
+  const f = $('#f-plano');
+  f.reset();
+  $('#plano-titulo').textContent = p ? `Plano ${p.nome}` : 'Novo plano';
+  $('#campo-id').classList.toggle('oculto', Boolean(p));
+  f.id.required = !p;
+  f.nome.value = p?.nome || '';
+  f.precoMensal.value = p?.precoMensal ?? 0;
+  f.ativo.checked = p ? p.ativo : true;
+  $('#plano-limites').innerHTML = Object.entries(planosData.limites).map(([k, nome]) =>
+    `<label class="campo"><span>${esc(nome)}</span><input type="number" min="0" name="lim-${k}" value="${p?.limites[k] ?? 0}"></label>`).join('');
+  $('#plano-funcs').innerHTML = Object.entries(planosData.funcionalidades).map(([k, nome]) =>
+    `<label class="caixa"><input type="checkbox" name="fn-${k}" ${p?.funcionalidades.includes(k) ? 'checked' : ''}> ${esc(nome)}</label>`).join('');
+  $('#apagar-plano').classList.toggle('oculto', !p || p.id === 'teste');
+  $('#d-plano').showModal();
+}
+$('#planos-linhas').addEventListener('click', e => { const b = e.target.closest('[data-plano]'); if (b) abrirPlano(b.dataset.plano); });
+$('#novo-plano').addEventListener('click', () => abrirPlano(null));
+$('#guardar-plano').addEventListener('click', async e => {
+  e.preventDefault();
+  const f = $('#f-plano');
+  if (!f.reportValidity()) return;
+  const id = planoAberto ? planoAberto.id : f.id.value.trim().toLowerCase();
+  if (!planoAberto && planosData.planos.some(p => p.id === id)) return toast('Já existe um plano com esse identificador.');
+  const body = {
+    nome: f.nome.value, precoMensal: Number(f.precoMensal.value), ativo: f.ativo.checked,
+    limites: Object.fromEntries(Object.keys(planosData.limites).map(k => [k, Number(f[`lim-${k}`].value)])),
+    funcionalidades: Object.keys(planosData.funcionalidades).filter(k => f[`fn-${k}`].checked),
+  };
+  const usam = planoAberto ? planosData.uso[planoAberto.id] || 0 : 0;
+  if (usam && !confirm(`${usam} restaurante(s) usam este plano. As mudanças aplicam-se logo a eles. Continuar?`)) return;
+  try {
+    await api(`/api/plataforma/planos/${encodeURIComponent(id)}`, { method: 'PUT', body });
+    $('#d-plano').close(); toast('Plano guardado'); carregar();
+  } catch (err) { toast(err.message); }
+});
+$('#apagar-plano').addEventListener('click', async e => {
+  e.preventDefault();
+  if (!confirm(`Apagar o plano ${planoAberto.nome}?`)) return;
+  try { await api(`/api/plataforma/planos/${encodeURIComponent(planoAberto.id)}`, { method: 'DELETE' }); $('#d-plano').close(); toast('Plano apagado'); carregar(); }
+  catch (err) { toast(err.message); }
+});

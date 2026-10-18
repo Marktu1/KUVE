@@ -83,6 +83,20 @@
       </div>
     </section>
 
+    <section class="cartao planos-cartao">
+      <div class="tabela-cab">
+        <div><h2>Planos</h2><p id="mrr" class="mudo pequeno"></p></div>
+        <button id="novo-plano" class="btn secundario pequeno"><svg class="ic"><use href="/img/icones.svg#mais"/></svg>Novo plano</button>
+      </div>
+      <div class="tabela-rolar">
+        <table class="tabela compacta">
+          <thead><tr><th>Plano</th><th class="num">Preço / mês</th><th class="num">Pratos</th><th class="num">3D</th><th class="num">Mesas</th><th class="num">Equipa</th><th>Funcionalidades</th><th class="num">Restaurantes</th><th></th></tr></thead>
+          <tbody id="planos-linhas"></tbody>
+        </table>
+      </div>
+      <p class="mudo pequeno nota-planos">Os limites e as funcionalidades são aplicados no servidor. Mudar um plano afeta logo todos os restaurantes que o usam. Os preços são só para a tua gestão: o Menu 3D não cobra nada automaticamente.</p>
+    </section>
+
     <section class="cartao ia">
       <div class="tabela-cab">
         <h2>IA · foto → 3D</h2>
@@ -122,10 +136,7 @@
     </div>
     <div class="dois">
       <label class="campo"><span>Plano</span>
-        <select name="plano">
-          <option value="teste">Teste</option><option value="essencial">Essencial</option>
-          <option value="profissional">Profissional</option><option value="gratis">Grátis (parceiro)</option>
-        </select>
+        <select name="plano" data-planos></select>
       </label>
       <label class="campo"><span>Pago até</span><input name="pagoAte" type="date"></label>
     </div>
@@ -151,6 +162,27 @@
   </form>
 </div>
 
+<!-- Editar plano -->
+<dialog id="d-plano" class="dialogo largo">
+  <form id="f-plano" method="dialog">
+    <div><h2 id="plano-titulo">Plano</h2><p class="mudo pequeno">Os preços são exemplos até os validares com os restaurantes-piloto.</p></div>
+    <div class="dois">
+      <label class="campo"><span>Nome</span><input name="nome" type="text" maxlength="40" required></label>
+      <label class="campo"><span>Preço por mês (Kz)</span><input name="precoMensal" type="number" min="0" step="500" required></label>
+    </div>
+    <label class="campo" id="campo-id"><span>Identificador (sem espaços, não muda depois)</span><input name="id" type="text" maxlength="30" pattern="[a-z0-9-]+" placeholder="ex.: premium-plus"></label>
+    <fieldset class="grupo"><legend>Limites</legend><div id="plano-limites" class="limites-grelha"></div><small class="mudo">0 = não incluído.</small></fieldset>
+    <fieldset class="grupo"><legend>Funcionalidades</legend><div id="plano-funcs" class="funcs-grelha"></div></fieldset>
+    <label class="interruptor-linha"><input type="checkbox" name="ativo"> Disponível para novos restaurantes</label>
+    <div class="acoes">
+      <button class="btn fantasma perigo" value="apagar" id="apagar-plano" formnovalidate>Apagar</button>
+      <span class="espaco"></span>
+      <button class="btn fantasma" value="cancelar" formnovalidate>Cancelar</button>
+      <button class="btn acento" value="guardar" id="guardar-plano">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
 <!-- Novo restaurante -->
 <dialog id="d-novo" class="dialogo">
   <form id="f-novo" method="dialog">
@@ -166,7 +198,7 @@
     <label class="campo"><span>Contacto do responsável</span><input name="contacto" type="text" maxlength="120"></label>
     <div class="dois">
       <label class="campo"><span>Plano</span>
-        <select name="plano"><option value="teste">Teste</option><option value="essencial">Essencial</option><option value="profissional">Profissional</option><option value="gratis">Grátis (parceiro)</option></select>
+        <select name="plano" data-planos></select>
       </label>
       <label class="campo"><span>Pago até</span><input name="pagoAte" type="date"></label>
     </div>

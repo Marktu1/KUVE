@@ -132,3 +132,21 @@
   .filtros, .filtros input { width: 100%; }
   .gaveta-corpo { padding: 18px; }
 }
+
+/* Planos */
+.planos-cartao { padding: 18px 0 6px; }
+.planos-cartao .tabela-cab p { margin-top: 2px; }
+.funcs-tab { white-space: normal !important; max-width: 340px; font-size: .8125rem; color: var(--musgo); }
+.sec-tab { display: block; font-size: .75rem; color: var(--nevoa); }
+.tabela tr.inativo td { color: var(--nevoa); }
+.nota-planos { padding: 10px 18px 12px; margin: 0; }
+.dialogo.largo { max-width: 640px; }
+.grupo { border: 1px solid var(--linha); border-radius: var(--r-m); padding: 12px 14px 14px; margin: 0; display: grid; gap: 8px; }
+.grupo legend { font-weight: 700; font-size: .875rem; padding: 0 6px; }
+.limites-grelha { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 560px) { .limites-grelha { grid-template-columns: 1fr 1fr; } }
+.funcs-grelha { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; }
+.caixa, .interruptor-linha { display: flex; align-items: center; gap: 8px; font-size: .9375rem; cursor: pointer; }
+.caixa input, .interruptor-linha input { width: 18px; height: 18px; accent-color: var(--tinta); }
+.dialogo .acoes .espaco { flex: 1; }
+.btn.perigo { color: var(--erro); }
