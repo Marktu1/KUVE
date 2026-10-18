@@ -40,15 +40,28 @@ function delta(agora, antes, inverso = false) {
 function pintar(d) {
   const a = d.atual, b = d.anterior, m = esc(d.moeda);
   $('#painel-sub').textContent = `Últimos ${d.dias} dias, comparados com os ${d.dias} anteriores.`;
-  const conv = a.conversao, convAntes = b.visitas ? b.pedidos / b.visitas : null;
+  // acima de 100% os dados não são fiáveis (visitas não registadas, por exemplo pedidos feitos noutro aparelho)
+  const fiavel = v => (v != null && v <= 1 ? v : null);
+  const conv = fiavel(a.conversao), convAntes = fiavel(b.visitas ? b.pedidos / b.visitas : null);
+  // hoje: o que interessa durante o serviço
+  const h = d.hoje || {};
+  $('#painel-hoje').innerHTML = `
+    <span class="hoje-titulo">Hoje</span>
+    <div><b>${n(h.pedidos)}</b><span>pedidos</span></div>
+    <div><b>${n(h.vendas)} <small>${m}</small></b><span>valor pedido</span></div>
+    ${d.funcPagamentos ? `<div><b class="ok">${n(h.pago)} <small>${m}</small></b><span>pagamentos confirmados</span></div>
+    <div><b class="${h.porPagar ? 'aviso' : ''}">${n(h.porPagar)} <small>${m}</small></b><span>por pagar</span></div>` : ''}
+    <div><b class="${h.pendentes ? 'aviso' : ''}">${n(h.pendentes)}</b><span>por confirmar ou preparar</span></div>
+    <div><b>${n(h.emCurso)}</b><span>em curso</span></div>`;
   $('#painel-kpis').innerHTML = `
-    <div class="cartao kpi"><span class="rotulo">Vendas pelo menu</span><span class="valor">${n(a.vendas)}<small>${m}</small></span>${delta(a.vendas, b.vendas)}</div>
+    <div class="cartao kpi"><span class="rotulo">Valor pedido pelo menu</span><span class="valor">${n(a.vendas)}<small>${m}</small></span>${delta(a.vendas, b.vendas)}<span class="explica">Soma dos pedidos não cancelados. Não é dinheiro recebido.</span></div>
+    ${d.funcPagamentos ? `<div class="cartao kpi"><span class="rotulo">Pagamentos confirmados</span><span class="valor">${n(a.pago)}<small>${m}</small></span>${delta(a.pago, b.pago)}<span class="explica">${n(a.pedidosPagos)} pedidos pagos · ${n(a.porPagar)} ${m} por pagar${d.metodos?.length ? `<br>${d.metodos.map(x => `${esc(x.metodo)}: ${n(x.valor)}`).join(' · ')}` : ''}</span></div>` : ''}
     <div class="cartao kpi"><span class="rotulo">Pedidos</span><span class="valor">${n(a.pedidos)}</span>${delta(a.pedidos, b.pedidos)}</div>
     <div class="cartao kpi"><span class="rotulo">Valor médio por pedido</span><span class="valor">${n(a.ticket)}<small>${m}</small></span>${delta(a.ticket, b.ticket)}</div>
     <div class="cartao kpi"><span class="rotulo">Visitas que viram pedido</span><span class="valor">${pct(conv)}</span>${conv != null && convAntes != null ? delta(conv, convAntes) : `<span class="explica">${n(a.visitas)} visitas ao menu</span>`}</div>
     <div class="cartao kpi"><span class="rotulo">Pratos postos na mesa (AR)</span><span class="valor">${n(a.ar)}</span>${delta(a.ar, b.ar)}</div>`;
 
-  linha($('#g-vendas'), 'Vendas por dia', d.serie, 'vendas', v => `${n(v)} ${d.moeda}`);
+  linha($('#g-vendas'), 'Valor pedido por dia', d.serie, 'vendas', v => `${n(v)} ${d.moeda}`);
   linha($('#g-pedidos'), 'Pedidos por dia', d.serie, 'pedidos', v => `${n(v)} pedidos`);
 
   // mais vendidos

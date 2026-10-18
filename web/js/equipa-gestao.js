@@ -4,6 +4,8 @@ import { esc } from './comum.js';
 const $ = s => document.querySelector(s);
 let ctx = null, ligado = false, membros = [];
 const FUNCAO = { rececao: 'Receção', empregado: 'Empregado de mesa', cozinha: 'Cozinha' };
+const PERMISSOES = { pedidos: 'Pedidos', cancelar: 'Cancelar', pagamentos: 'Pagamentos', mesas: 'Mesas', esgotados: 'Esgotados' };
+const PERM_FUNC = { pagamentos: 'pagamentos', mesas: 'mesas' };   // estas só aparecem se o plano as incluir
 const ICONE = id => `<svg class="ic" aria-hidden="true"><use href="/img/icones.svg#${id}"/></svg>`;
 
 export async function abrir(contexto) {
@@ -40,7 +42,11 @@ function pintar() {
   $('#membros').innerHTML = membros.length ? membros.map(m => `
     <li class="membro${m.ativo ? '' : ' inativo'}">
       <span class="avatar">${esc(m.nome.trim()[0]?.toUpperCase() || '')}</span>
-      <span><strong>${esc(m.nome)}</strong><small>${FUNCAO[m.funcao] || m.funcao} · ${m.ativo ? `última entrada: ${quando(m.ultimaEntrada)}` : 'acesso desativado'}</small></span>
+      <span><strong>${esc(m.nome)}</strong><small>${FUNCAO[m.funcao] || m.funcao} · ${m.ativo ? `última entrada: ${quando(m.ultimaEntrada)}` : 'acesso desativado'}</small>
+        <span class="permissoes" role="group" aria-label="O que ${esc(m.nome)} pode fazer">${Object.entries(PERMISSOES)
+          .filter(([p]) => !PERM_FUNC[p] || (ctx.obterRestaurante().funcionalidades || []).includes(PERM_FUNC[p]))
+          .map(([p, nome]) => `<label class="perm"><input type="checkbox" data-perm="${p}" data-membro="${m.id}" ${m.permissoes.includes(p) ? 'checked' : ''}><span>${nome}</span></label>`).join('')}</span>
+      </span>
       <span class="acoes">
         <label class="interruptor" title="${m.ativo ? 'Desativar acesso' : 'Ativar acesso'}"><input type="checkbox" data-ativo="${m.id}" ${m.ativo ? 'checked' : ''}><span class="sr">Acesso ativo</span></label>
         <button class="btn fantasma pequeno" data-pin="${m.id}">Novo PIN</button>
@@ -62,6 +68,18 @@ function ligar() {
   });
 
   $('#membros').addEventListener('change', async e => {
+    if (e.target.dataset.perm) {
+      const m = membros.find(x => x.id === e.target.dataset.membro);
+      const permissoes = [...document.querySelectorAll(`[data-membro="${m.id}"][data-perm]`)].filter(x => x.checked).map(x => x.dataset.perm);
+      // manter as permissões que o plano esconde (para não as perder se o plano mudar)
+      for (const p of m.permissoes) if (PERM_FUNC[p] && !(ctx.obterRestaurante().funcionalidades || []).includes(PERM_FUNC[p])) permissoes.push(p);
+      try {
+        await ctx.api(`${base()}/${m.id}`, { method: 'PATCH', key: ctx.chave(), body: { permissoes } });
+        m.permissoes = permissoes;
+        ctx.toast(`${m.nome}: permissões guardadas. Vale na próxima vez que entrar.`);
+      } catch (err) { ctx.toast(err.message); e.target.checked = !e.target.checked; }
+      return;
+    }
     const id = e.target.dataset.ativo;
     if (!id) return;
     try {

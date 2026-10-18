@@ -76,7 +76,7 @@
       <button role="tab" data-aba="pratos"><svg class="ic"><use href="/img/icones.svg#pratos"/></svg>Pratos</button>
       <button role="tab" data-aba="pedidos"><svg class="ic"><use href="/img/icones.svg#pedidos"/></svg>Pedidos <span id="badge-pedidos" class="badge oculto"></span></button>
       <button role="tab" data-aba="impresso"><svg class="ic"><use href="/img/icones.svg#cena"/></svg>Menu em AR</button>
-      <button role="tab" data-aba="qr"><svg class="ic"><use href="/img/icones.svg#qr"/></svg>QR das mesas</button>
+      <button role="tab" data-aba="qr"><svg class="ic"><use href="/img/icones.svg#qr"/></svg>Mesas e QR</button>
       <button role="tab" data-aba="equipa"><svg class="ic"><use href="/img/icones.svg#equipa"/></svg>Equipa</button>
       <button role="tab" data-aba="restaurante"><svg class="ic"><use href="/img/icones.svg#loja"/></svg>Restaurante</button>
     </nav>
@@ -99,6 +99,7 @@
           <button data-dias="90">90 dias</button>
         </div>
       </header>
+      <div id="painel-hoje" class="cartao painel-hoje"></div>
       <div id="painel-kpis" class="kpis"></div>
       <div class="painel-grelha">
         <div class="cartao grafico" id="g-vendas"></div>
@@ -220,14 +221,19 @@
       <header class="cab-pagina">
         <div>
           <h1>Pedidos</h1>
-          <p class="mudo">Atualiza sozinho a cada 5 segundos. Entregues e cancelados saem do quadro.</p>
+          <p class="mudo">Atualiza sozinho a cada 5 segundos. Os pedidos entregues e pagos saem do quadro. Registar um pagamento não é uma fatura: é o teu controlo interno de quem já pagou.</p>
         </div>
       </header>
-      <div class="quadro">
-        <div class="coluna" data-estado="novo"><h3>Novos <span class="contagem"></span></h3><ol></ol></div>
-        <div class="coluna" data-estado="a preparar"><h3>A preparar <span class="contagem"></span></h3><ol></ol></div>
+      <div class="quadro quadro-4">
+        <div class="coluna" data-estado="novos"><h3>Novos <span class="contagem"></span></h3><ol></ol></div>
+        <div class="coluna" data-estado="em_preparacao"><h3>Em preparação <span class="contagem"></span></h3><ol></ol></div>
         <div class="coluna" data-estado="pronto"><h3>Prontos <span class="contagem"></span></h3><ol></ol></div>
+        <div class="coluna" data-estado="por_pagar"><h3>Entregues por pagar <span class="contagem"></span></h3><ol></ol></div>
       </div>
+      <details class="cartao hoje-pedidos">
+        <summary>Pedidos fechados nas últimas 36 horas <span id="n-fechados" class="mudo"></span></summary>
+        <ul id="fechados" class="fechados"></ul>
+      </details>
     </section>
 
     <!-- MENU EM AR (editor de cena) -->
@@ -295,11 +301,22 @@
     <section id="aba-qr" class="aba oculto">
       <header class="cab-pagina">
         <div>
-          <h1>QR das mesas</h1>
-          <p class="mudo">Cada QR abre o menu já com o número da mesa, para o pedido chegar identificado.</p>
+          <h1>Mesas e QR codes</h1>
+          <p class="mudo">Cada mesa tem um QR com um código secreto: o pedido chega identificado e ninguém consegue pedir para outra mesa mudando o link.</p>
         </div>
-        <button id="imprimir-qr" class="btn"><svg class="ic"><use href="/img/icones.svg#imprimir"/></svg>Imprimir</button>
+        <button id="imprimir-qr" class="btn"><svg class="ic"><use href="/img/icones.svg#imprimir"/></svg>Imprimir os QR</button>
       </header>
+      <div class="cartao mesas-barra">
+        <form id="f-mesa" class="f-mesa">
+          <label class="campo"><span>Nova mesa</span><input name="nome" type="text" maxlength="20" placeholder="Ex.: 12 ou Esplanada C"></label>
+          <button class="btn acento" type="submit"><svg class="ic"><use href="/img/icones.svg#mais"/></svg>Adicionar</button>
+        </form>
+        <form id="f-mesas" class="f-mesa">
+          <label class="campo"><span>Várias de uma vez</span><span class="intervalo"><input name="de" type="number" min="1" max="500" placeholder="1"> a <input name="ate" type="number" min="1" max="500" placeholder="10"></span></label>
+          <button class="btn secundario" type="submit">Criar</button>
+        </form>
+        <p id="uso-mesas" class="mudo pequeno"></p>
+      </div>
       <div id="grelha-qr" class="grelha-qr"></div>
     </section>
 
@@ -308,7 +325,7 @@
       <header class="cab-pagina">
         <div>
           <h1>Equipa</h1>
-          <p class="mudo">Cada pessoa entra com um PIN de 6 dígitos e só vê os pedidos e os pratos esgotados. Não mexe no menu, nos preços nem vê a faturação.</p>
+          <p class="mudo">Cada pessoa entra com um PIN de 6 dígitos e só faz o que marcares para ela. A equipa nunca mexe no menu nem nos preços, e não vê o painel de vendas.</p>
         </div>
       </header>
       <div class="equipa-grelha">
@@ -343,6 +360,7 @@
           <p class="mudo">Como o teu restaurante aparece no menu do cliente.</p>
         </div>
       </header>
+      <section id="o-meu-plano" class="cartao plano-cartao" aria-labelledby="plano-titulo"></section>
       <div class="rest-grelha">
         <form id="f-rest" class="cartao form-rest">
           <div class="logo-linha">

@@ -58,6 +58,11 @@ async function abrir() {
   const data = await api(`/api/admin/${sess.id}`, { key: k() });
   rest = data.restaurant;
   pratos = data.dishes;
+  window.__plano = data.plano;
+  pintarPlano(data.plano);
+  // separadores conforme o plano contratado
+  const porPlano = { painel: 'painel', pedidos: 'pedidos', impresso: 'impresso', equipa: 'equipa' };
+  for (const [aba, f] of Object.entries(porPlano)) $(`.abas [data-aba="${aba}"]`).classList.toggle('oculto', !temFunc(f));
   sess.slug = rest.slug;
   $('#entrada').classList.add('oculto');
   $('#app').classList.remove('oculto');
@@ -73,7 +78,32 @@ async function abrir() {
   aviso.classList.toggle('oculto', !aviso.innerHTML);
   if (pratos.length) editar(pratos[0]); else mostrarVazio();
   iniciarPedidos();
-  abrirModulo('/js/painel-gerente.js');
+  if (temFunc('painel')) abrirModulo('/js/painel-gerente.js');
+  else $('.abas [data-aba="pratos"]').click();
+}
+
+// ---------------- o meu plano ----------------
+const NOMES_FUNC = { pedidos: 'Pedidos pelo telemóvel', mesas: 'Gestão de mesas', equipa: 'Equipa com PIN', pagamentos: 'Registo de pagamentos', painel: 'Painel de vendas', impresso: 'Menu impresso em AR', ia3d: 'IA: foto → 3D', identidade: 'Identidade visual personalizada' };
+const NOMES_LIM = { pratos: 'Pratos', modelos3d: 'Pratos com 3D', mesas: 'Mesas', equipa: 'Pessoas na equipa' };
+function pintarPlano(p) {
+  const el = $('#o-meu-plano');
+  if (!p) return el.classList.add('oculto');
+  const hojeIso = new Date().toLocaleDateString('sv-SE', { timeZone: 'Africa/Luanda' });
+  const atraso = p.precoMensal > 0 && p.pagoAte && p.pagoAte < hojeIso;
+  const estado = p.estado === 'suspenso' ? ['mau', 'Suspenso'] : atraso ? ['aviso', 'Pagamento em atraso'] : ['ok', 'Ativo'];
+  const data = iso => iso ? new Date(`${iso}T12:00:00`).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  el.innerHTML = `
+    <div class="plano-cab">
+      <div><span class="rotulo-plano">O teu plano</span><h2 id="plano-titulo">${esc(p.nome)}</h2>
+        <p class="mudo">${p.precoMensal ? `${Number(p.precoMensal).toLocaleString('pt-PT')} Kz por mês` : 'Sem mensalidade'}${p.pagoAte && p.precoMensal ? ` · pago até ${data(p.pagoAte)}` : ''}</p></div>
+      <span class="pilula-plano ${estado[0]}">${estado[1]}</span>
+    </div>
+    <div class="plano-uso">${Object.entries(NOMES_LIM).map(([kk, nome]) => {
+      const max = p.limites[kk] || 0, uso = p.uso[kk] || 0;
+      return `<div><span>${nome}</span><b>${uso}${max ? ` de ${max}` : ''}</b><i class="barra-uso${max && uso / max >= 0.9 ? ' cheia' : ''}"><i style="width:${max ? Math.min(100, (uso / max) * 100) : 0}%"></i></i>${max ? '' : '<small>não incluído</small>'}</div>`;
+    }).join('')}</div>
+    <ul class="plano-func">${Object.entries(NOMES_FUNC).map(([f, nome]) => `<li class="${p.funcionalidades.includes(f) ? 'sim' : 'nao'}">${nome}</li>`).join('')}</ul>
+    <p class="mudo pequeno">Para mudar de plano ou pagar a mensalidade, fala com a equipa Menu 3D.</p>`;
 }
 
 // módulos do gerente carregados só quando são abertos
@@ -404,10 +434,24 @@ async function esperarTrabalho(id, estado) {
 }
 
 // ---------------- pedidos ----------------
+const METODOS = { dinheiro: 'Dinheiro', multicaixa: 'Multicaixa Express', tpa: 'TPA (cartão)', transferencia: 'Transferência' };
+const ROTULO = { recebido: 'Recebido', confirmado: 'Confirmado', em_preparacao: 'Em preparação', pronto: 'Pronto', entregue: 'Entregue', cancelado: 'Cancelado' };
+const ACOES = {
+  recebido: [['confirmado', 'Confirmar', 'secundario'], ['em_preparacao', 'Preparar', '']],
+  confirmado: [['em_preparacao', 'Preparar', '']],
+  em_preparacao: [['pronto', 'Está pronto', '']],
+  pronto: [['entregue', 'Entregue', 'acento']],
+};
+const COLUNA = { recebido: 'novos', confirmado: 'novos', em_preparacao: 'em_preparacao', pronto: 'pronto' };
+const temFunc = f => (rest?.funcionalidades || []).includes(f);
+const pago = p => p.pagamento?.estado === 'pago';
 let pedidos = [];
-let vistos = new Set(JSON.parse(sessionStorage.getItem('menu3d.vistos') || '[]'));
+let vistos = new Set();
+try { vistos = new Set(JSON.parse(sessionStorage.getItem('menu3d.vistos') || '[]')); } catch {}
+let metodosAbertos = null;
 
 function iniciarPedidos() {
+  if (!temFunc('pedidos')) return;
   carregarPedidos();
   setInterval(carregarPedidos, 5000);
 }
@@ -417,12 +461,12 @@ async function carregarPedidos() {
     const r = await api(`/api/restaurants/${sess.id}/orders`, { key: k() });
     pedidos = r.orders;
     const abaAberta = !$('#aba-pedidos').classList.contains('oculto');
-    const novos = pedidos.filter(p => p.status === 'novo');
-    if (abaAberta) { novos.forEach(p => vistos.add(p.id)); sessionStorage.setItem('menu3d.vistos', JSON.stringify([...vistos])); }
+    const novos = pedidos.filter(p => p.status === 'recebido');
+    if (abaAberta) { novos.forEach(p => vistos.add(p.id)); try { sessionStorage.setItem('menu3d.vistos', JSON.stringify([...vistos])); } catch {} }
     const porVer = novos.filter(p => !vistos.has(p.id)).length;
     $('#badge-pedidos').textContent = porVer;
     $('#badge-pedidos').classList.toggle('oculto', !porVer);
-    if (abaAberta) pintarPedidos();
+    if (abaAberta && !metodosAbertos) pintarPedidos();
   } catch { /* sem rede: tenta outra vez daqui a 5 s */ }
 }
 
@@ -433,49 +477,151 @@ function haQuanto(iso) {
   return new Date(iso).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
 }
 
-const SEGUINTE = { 'novo': ['a preparar', 'Preparar'], 'a preparar': ['pronto', 'Está pronto'], 'pronto': ['entregue', 'Entregue'] };
+function cartaoPedido(p) {
+  const comPag = temFunc('pagamentos');
+  const acoes = (ACOES[p.status] || []).map(([para, txt, cls]) => `<button class="btn pequeno ${cls}" data-id="${p.id}" data-st="${para}">${txt}</button>`);
+  if (['recebido', 'confirmado', 'em_preparacao'].includes(p.status) && !pago(p)) acoes.unshift(`<button class="btn fantasma pequeno perigo" data-id="${p.id}" data-st="cancelado">Cancelar</button>`);
+  const pag = !comPag ? '' : pago(p)
+    ? `<span class="pago-tag">Pago · ${esc(METODOS[p.pagamento.metodo] || '')}</span><button class="link-mini" data-anular="${p.id}">anular</button>`
+    : metodosAbertos === p.id
+      ? `<div class="metodos">${Object.entries(METODOS).map(([m, nome]) => `<button class="btn secundario pequeno" data-metodo="${m}" data-id="${p.id}">${nome}</button>`).join('')}<button class="btn fantasma pequeno" data-fechar-metodos>Voltar</button></div>`
+      : `<button class="btn secundario pequeno" data-pagar="${p.id}">Registar pagamento</button>`;
+  return `<li class="pedido">
+    <div class="pedido-cab"><strong>${p.table ? `Mesa ${esc(p.table)}` : 'Balcão'}</strong><span>#${p.number} · ${haQuanto(p.createdAt)}</span></div>
+    ${p.status === 'confirmado' ? '<span class="etiqueta-est">Confirmado</span>' : ''}
+    ${p.table && p.mesaVerificada === false ? '<span class="etiqueta-est aviso-mesa" title="O número da mesa veio escrito no link, não de um QR com código">Mesa não verificada</span>' : ''}
+    <ul>${p.items.map(i => `<li><b>${i.qty}×</b> ${esc(i.name)}${i.variant ? ` <span class="mudo">· ${esc(i.variant)}</span>` : ''}</li>`).join('')}</ul>
+    ${p.note ? `<p class="nota">${esc(p.note)}</p>` : ''}
+    <div class="pedido-rodape"><strong>${dinheiro(p.total, rest.currency)}</strong><span class="pag">${pag}</span></div>
+    ${acoes.length ? `<div class="acoes">${acoes.join('')}</div>` : ''}
+  </li>`;
+}
 
 function pintarPedidos() {
-  for (const col of $$('.coluna')) {
-    const estado = col.dataset.estado;
-    const lista = pedidos.filter(p => p.status === estado);
-    col.querySelector('.contagem').textContent = lista.length;
-    col.querySelector('ol').innerHTML = lista.length ? lista.map(p => `
-      <li class="pedido">
-        <div class="pedido-cab"><strong>${p.table ? `Mesa ${esc(p.table)}` : 'Balcão'}</strong><span>#${p.number} · ${haQuanto(p.createdAt)}</span></div>
-        <ul>${p.items.map(i => `<li><b>${i.qty}×</b> ${esc(i.name)}${i.variant ? ` <span class="mudo">· ${esc(i.variant)}</span>` : ''}</li>`).join('')}</ul>
-        ${p.note ? `<p class="nota">${esc(p.note)}</p>` : ''}
-        <div class="pedido-rodape">
-          <strong>${dinheiro(p.total, rest.currency)}</strong>
-          <div class="acoes">
-            ${estado === 'novo' ? `<button class="btn fantasma pequeno" data-id="${p.id}" data-st="cancelado">Cancelar</button>` : ''}
-            <button class="btn pequeno" data-id="${p.id}" data-st="${SEGUINTE[estado][0]}">${SEGUINTE[estado][1]}</button>
-          </div>
-        </div>
-      </li>`).join('') : '<li class="vazio-coluna">Sem pedidos</li>';
+  const grupos = { novos: [], em_preparacao: [], pronto: [], por_pagar: [] };
+  const fechados = [];
+  for (const p of pedidos) {
+    if (COLUNA[p.status]) grupos[COLUNA[p.status]].push(p);
+    else if (p.status === 'entregue' && !pago(p) && temFunc('pagamentos')) grupos.por_pagar.push(p);
+    else fechados.push(p);
   }
-  $$('.pedido [data-st]').forEach(b => b.addEventListener('click', async () => {
-    b.disabled = true;
-    try {
-      await api(`/api/orders/${b.dataset.id}`, { method: 'PATCH', key: k(), body: { status: b.dataset.st } });
-      await carregarPedidos();
-    } catch (err) { toast(err.message); b.disabled = false; }
-  }));
+  $('.coluna[data-estado="por_pagar"]').classList.toggle('oculto', !temFunc('pagamentos'));
+  $('#aba-pedidos .quadro').classList.toggle('quadro-4', temFunc('pagamentos'));
+  for (const col of $$('#aba-pedidos .coluna')) {
+    const lista = (grupos[col.dataset.estado] || []).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    col.querySelector('.contagem').textContent = lista.length;
+    col.querySelector('ol').innerHTML = lista.length ? lista.map(cartaoPedido).join('') : '<li class="vazio-coluna">Sem pedidos</li>';
+  }
+  $('#n-fechados').textContent = `(${fechados.length})`;
+  $('#fechados').innerHTML = fechados.map(p => `<li><span>#${p.number} · ${p.table ? `Mesa ${esc(p.table)}` : 'Balcão'} · ${haQuanto(p.createdAt)}</span>
+    <span class="estado-fechado ${p.status}">${ROTULO[p.status] || p.status}</span>
+    <b>${dinheiro(p.total, rest.currency)}</b>
+    <span>${pago(p) ? `Pago · ${esc(METODOS[p.pagamento.metodo] || '')} <button class="link-mini" data-anular="${p.id}">anular</button>` : p.status === 'cancelado' ? '' : 'Por pagar'}</span></li>`).join('') || '<li class="mudo">Nada ainda.</li>';
 }
 
-// ---------------- QR ----------------
-function pintarQR() {
+$('#aba-pedidos').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.pagar) { metodosAbertos = b.dataset.pagar; return pintarPedidos(); }
+  if (b.hasAttribute('data-fechar-metodos')) { metodosAbertos = null; return pintarPedidos(); }
+  b.disabled = true;
+  try {
+    if (b.dataset.metodo) {
+      await api(`/api/orders/${b.dataset.id}/pagamento`, { method: 'POST', key: k(), body: { metodo: b.dataset.metodo } });
+      metodosAbertos = null; toast(`Pagamento registado: ${METODOS[b.dataset.metodo]}`);
+    } else if (b.dataset.anular) {
+      if (!confirm('Anular este pagamento? O pedido volta a ficar por pagar.')) { b.disabled = false; return; }
+      await api(`/api/orders/${b.dataset.anular}/pagamento`, { method: 'DELETE', key: k() });
+      toast('Pagamento anulado');
+    } else if (b.dataset.st) {
+      if (b.dataset.st === 'cancelado' && !confirm('Cancelar este pedido?')) { b.disabled = false; return; }
+      await api(`/api/orders/${b.dataset.id}`, { method: 'PATCH', key: k(), body: { status: b.dataset.st } });
+    }
+    await carregarPedidos(); pintarPedidos();
+  } catch (err) { toast(err.message); b.disabled = false; }
+});
+
+// ---------------- mesas e QR ----------------
+let mesas = [];
+const ESTADO_MESA = { livre: 'Livre', pendente: 'Pedido por confirmar', ocupada: 'Ocupada' };
+async function pintarQR() {
   const base = `/api/menu/${rest.slug}/qr.svg`;
-  const cartoes = [];
-  for (let i = 1; i <= rest.tables; i++) {
-    cartoes.push(`<div class="qr"><span class="qr-rest">${esc(rest.name)}</span><img src="${base}?mesa=${i}" alt="QR da mesa ${i}" loading="lazy"><strong>Mesa ${i}</strong><small>Aponta a câmara para ver o menu em 3D</small></div>`);
+  const extra = [`<div class="qr qr-extra"><span class="qr-rest">${esc(rest.name)}</span><img src="${base}" alt="QR geral" loading="lazy"><strong>Balcão / takeaway</strong><small>Menu sem mesa</small></div>`];
+  if (rest.print?.mindUrl) extra.push(`<div class="qr qr-extra"><span class="qr-rest">${esc(rest.name)}</span><img src="${base}?tipo=impresso" alt="QR do menu impresso" loading="lazy"><strong>Menu impresso</strong><small>Abre a câmara para o menu de papel</small></div>`);
+  const podeMesas = temFunc('mesas');
+  $('.mesas-barra').classList.toggle('oculto', !podeMesas);
+  if (!podeMesas) {
+    $('#grelha-qr').innerHTML = `<p class="aviso">A gestão de mesas não está incluída no teu plano. O QR geral abre o menu sem mesa.</p>${extra.join('')}`;
+    return;
   }
-  cartoes.push(`<div class="qr"><span class="qr-rest">${esc(rest.name)}</span><img src="${base}" alt="QR geral" loading="lazy"><strong>Balcão / takeaway</strong><small>Menu sem mesa</small></div>`);
-  if (rest.print?.mindUrl) {
-    cartoes.push(`<div class="qr"><span class="qr-rest">${esc(rest.name)}</span><img src="${base}?tipo=impresso" alt="QR do menu impresso" loading="lazy"><strong>Menu impresso</strong><small>Abre a câmara para o menu de papel</small></div>`);
-  }
-  $('#grelha-qr').innerHTML = cartoes.join('');
+  try {
+    const r = await api(`/api/restaurants/${sess.id}/mesas`, { key: k() });
+    mesas = r.mesas;
+  } catch (err) { return toast(err.message); }
+  const plano = window.__plano;
+  $('#uso-mesas').textContent = plano ? `${mesas.length} de ${plano.limites.mesas} mesas do plano ${plano.nome}.` : '';
+  $('#grelha-qr').innerHTML = mesas.map(m => `
+    <div class="qr${m.ativa ? '' : ' inativa'}" data-mesa="${m.id}">
+      <span class="qr-rest">${esc(rest.name)}</span>
+      <img src="${base}?m=${encodeURIComponent(m.codigo)}" alt="QR da mesa ${esc(m.nome)}" loading="lazy">
+      <strong>${/^\d+$/.test(m.nome) ? `Mesa ${esc(m.nome)}` : esc(m.nome)}</strong>
+      <small>Aponta a câmara para ver o menu em 3D</small>
+      <div class="mesa-gestao">
+        <span class="estado-mesa ${m.estado}">${m.ativa ? ESTADO_MESA[m.estado] : 'Desativada'}${m.porPagar ? ` · ${dinheiro(m.porPagar, rest.currency)} por pagar` : ''}</span>
+        <div class="mesa-botoes">
+          ${m.estado !== 'livre' ? `<button class="btn secundario pequeno" data-acao="libertar">Libertar</button>` : ''}
+          <button class="btn fantasma pequeno" data-acao="nome">Mudar nome</button>
+          <button class="btn fantasma pequeno" data-acao="codigo" title="O QR antigo deixa de funcionar">Novo QR</button>
+          <button class="btn fantasma pequeno" data-acao="ativa">${m.ativa ? 'Desativar' : 'Ativar'}</button>
+          <button class="btn fantasma pequeno icone perigo" data-acao="apagar" aria-label="Apagar a mesa ${esc(m.nome)}"><svg class="ic"><use href="/img/icones.svg#lixo"/></svg></button>
+        </div>
+      </div>
+    </div>`).join('') + extra.join('');
 }
+$('#grelha-qr').addEventListener('click', async e => {
+  const b = e.target.closest('[data-acao]'); if (!b) return;
+  const m = mesas.find(x => x.id === b.closest('[data-mesa]').dataset.mesa);
+  const url = `/api/restaurants/${sess.id}/mesas/${m.id}`;
+  try {
+    if (b.dataset.acao === 'nome') {
+      const nome = prompt('Nome ou número da mesa', m.nome); if (!nome || nome === m.nome) return;
+      await api(url, { method: 'PATCH', key: k(), body: { nome } });
+    } else if (b.dataset.acao === 'codigo') {
+      if (!confirm(`Gerar um QR novo para ${m.nome}? O QR impresso atual deixa de funcionar: terás de imprimir o novo.`)) return;
+      await api(url, { method: 'PATCH', key: k(), body: { novoCodigo: true } });
+      toast('QR novo criado. Imprime-o e troca o da mesa.');
+    } else if (b.dataset.acao === 'ativa') {
+      await api(url, { method: 'PATCH', key: k(), body: { ativa: !m.ativa } });
+    } else if (b.dataset.acao === 'apagar') {
+      if (!confirm(`Apagar a mesa ${m.nome}? O QR dela deixa de funcionar.`)) return;
+      await api(url, { method: 'DELETE', key: k() });
+    } else if (b.dataset.acao === 'libertar') {
+      try { await api(`${url}/libertar`, { method: 'POST', key: k(), body: {} }); }
+      catch (err) {
+        if (!confirm(`${err.message}\nLibertar mesmo assim?`)) return;
+        await api(`${url}/libertar`, { method: 'POST', key: k(), body: { mesmoAssim: true } });
+      }
+      toast(`${m.nome}: livre`);
+    }
+    pintarQR();
+  } catch (err) { toast(err.message); }
+});
+$('#f-mesa').addEventListener('submit', async e => {
+  e.preventDefault();
+  const nome = e.target.nome.value.trim(); if (!nome) return;
+  try { await api(`/api/restaurants/${sess.id}/mesas`, { method: 'POST', key: k(), body: { nome } }); e.target.reset(); pintarQR(); }
+  catch (err) { toast(err.message); }
+});
+$('#f-mesas').addEventListener('submit', async e => {
+  e.preventDefault();
+  const de = Number(e.target.de.value), ate = Number(e.target.ate.value);
+  if (!de || !ate || ate < de || ate - de > 199) return toast('Indica um intervalo válido (até 200 mesas).');
+  const nomes = Array.from({ length: ate - de + 1 }, (_, i) => String(de + i));
+  try {
+    const r = await api(`/api/restaurants/${sess.id}/mesas`, { method: 'POST', key: k(), body: { nomes } });
+    toast(r.criadas ? `${r.criadas} mesas criadas` : 'Essas mesas já existiam');
+    e.target.reset(); pintarQR();
+  } catch (err) { toast(err.message); }
+});
 $('#imprimir-qr').addEventListener('click', () => window.print());
 
 // ---------------- menu em AR (editor de cena, carregado só quando é aberto) ----------------
