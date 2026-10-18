@@ -1,0 +1,132 @@
+/* Menu 3D — tokens e base partilhada
+   Ideia: porcelana sobre linho. O prato é o herói; tudo à volta é calmo e preciso. */
+:root {
+  --porcelana: #F5F5F1;
+  --branco: #FFFFFF;
+  --tinta: #18201D;
+  --tinta-2: #2A3330;
+  --musgo: #5F6B63;
+  --nevoa: #8C968F;
+  --linha: #E2E4DE;
+  --linha-forte: #CDD1CA;
+  --mesa: #ECEDE7;
+  --acento: #C8322B;      /* gindungo — substituído pela cor do restaurante */
+  --dende: #E3A532;       /* destaque do AR */
+  --dende-escuro: #6B4A00;
+  --ok: #2F7A4F;
+  --erro: #B42318;
+
+  --f-titulo: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --f-texto: "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --r-xs: 6px;
+  --r-s: 10px;
+  --r-m: 16px;
+  --r-l: 24px;
+  --r-xl: 32px;
+
+  --sombra-1: 0 1px 2px rgba(24, 32, 29, .06), 0 1px 1px rgba(24, 32, 29, .04);
+  --sombra-2: 0 2px 4px rgba(24, 32, 29, .05), 0 12px 28px -12px rgba(24, 32, 29, .22);
+  --sombra-prato: 0 2px 3px rgba(24, 32, 29, .08), 0 18px 36px -16px rgba(24, 32, 29, .42);
+
+  /* linho: trama muito suave para a "mesa" onde os pratos pousam */
+  --linho:
+    repeating-linear-gradient(0deg, rgba(24,32,29,.018) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(24,32,29,.018) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 90% at 50% 40%, #F3F3EE 0%, #E7E8E1 100%);
+  /* prato de porcelana: base, aba e brilho */
+  --prato:
+    radial-gradient(circle at 50% 50%, #FFFFFF 0 52%, #F1F2EE 53% 56%, #FFFFFF 57% 66%, #E9EAE5 67% 69%, transparent 70%);
+
+  --facil: cubic-bezier(.2, .8, .2, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+body {
+  margin: 0;
+  background: var(--porcelana);
+  color: var(--tinta);
+  font: 400 16px/1.5 var(--f-texto);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01", "cv11";
+}
+h1, h2, h3 { font-family: var(--f-titulo); line-height: 1.08; margin: 0; letter-spacing: -0.022em; font-weight: 700; }
+h1 { font-size: 2.25rem; }
+h2 { font-size: 1.5rem; letter-spacing: -0.018em; }
+h3 { font-size: 1.0625rem; font-weight: 600; letter-spacing: -0.01em; }
+p { margin: 0; }
+a { color: inherit; }
+img { max-width: 100%; display: block; }
+svg.ic { width: 20px; height: 20px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--dende); outline-offset: 2px; border-radius: 6px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 44px; padding: 0 1.15rem;
+  border: 1px solid var(--tinta); border-radius: var(--r-botao, 999px);
+  background: var(--tinta); color: var(--porcelana);
+  font-weight: 600; font-size: .9375rem; text-decoration: none; white-space: nowrap;
+  transition: transform .15s var(--facil), background-color .15s, box-shadow .15s;
+}
+.btn:hover:not(:disabled) { background: var(--tinta-2); }
+.btn:active:not(:disabled) { transform: scale(.97); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn.secundario { background: var(--branco); color: var(--tinta); border-color: var(--linha-forte); box-shadow: var(--sombra-1); }
+.btn.secundario:hover:not(:disabled) { background: var(--branco); border-color: var(--tinta); }
+.btn.acento { background: var(--acento); border-color: var(--acento); color: var(--acento-texto, #fff); box-shadow: 0 8px 18px -10px var(--acento); }
+.btn.acento:hover:not(:disabled) { background: var(--acento); filter: brightness(1.06); }
+.btn.fantasma { background: transparent; border-color: transparent; color: var(--musgo); }
+.btn.fantasma:hover:not(:disabled) { background: rgba(24,32,29,.05); color: var(--tinta); }
+.btn.pequeno { min-height: 36px; padding: 0 .9rem; font-size: .875rem; }
+.btn.icone { width: 40px; min-height: 40px; padding: 0; }
+
+.campo { display: grid; gap: .35rem; }
+.campo > span { font-size: .8125rem; font-weight: 600; color: var(--tinta-2); }
+.campo small { color: var(--musgo); font-size: .8125rem; line-height: 1.4; }
+input[type=text], input[type=number], input[type=tel], input[type=password], select, textarea {
+  width: 100%; min-height: 44px; padding: .6rem .8rem;
+  border: 1px solid var(--linha-forte); border-radius: var(--r-s);
+  background: var(--branco);
+  transition: border-color .15s, box-shadow .15s;
+}
+textarea { min-height: 92px; resize: vertical; line-height: 1.45; }
+input:focus, select:focus, textarea:focus { border-color: var(--tinta); box-shadow: 0 0 0 3px rgba(24,32,29,.08); outline: none; }
+select {
+  appearance: none; padding-right: 2.2rem;
+  background: var(--branco) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%235F6B63' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right .85rem center;
+}
+input[type=range] { width: 100%; accent-color: var(--tinta); height: 28px; }
+
+.mudo { color: var(--musgo); }
+.oculto { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.aviso {
+  padding: .8rem 1rem; border-radius: var(--r-s);
+  background: #FFF6E2; border: 1px solid #F2D9A6; font-size: .9375rem;
+}
+.aviso.erro { background: #FDEEEC; border-color: #F4C2BB; color: var(--erro); }
+
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: .6rem;
+  background: var(--tinta); color: var(--porcelana);
+  padding: .75rem 1.15rem; border-radius: 999px; font-weight: 600; font-size: .9375rem;
+  z-index: 100; max-width: calc(100vw - 32px); box-shadow: var(--sombra-2);
+  animation: toast-entra .3s var(--facil);
+}
+.toast::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--dende); flex: none; }
+@keyframes toast-entra { from { opacity: 0; transform: translate(-50%, 8px); } }
+
+/* marca */
+.marca { display: inline-flex; align-items: center; gap: .55rem; font: 700 1.125rem/1 var(--f-titulo); letter-spacing: -0.02em; text-decoration: none; }
+.marca svg { width: 30px; height: 30px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

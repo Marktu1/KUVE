@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#18201D">
+<title>Menu 3D</title>
+<link rel="stylesheet" href="/vendor/letras/bricolage.css">
+<link rel="stylesheet" href="/vendor/letras/figtree.css">
+<link rel="stylesheet" href="/css/base.css">
+<style>
+  body { background: var(--tinta); color: var(--porcelana); min-height: 100vh; overflow-x: hidden; }
+  .topo { display: flex; justify-content: space-between; align-items: center; padding: 28px 24px; max-width: 1180px; margin: 0 auto; }
+  .topo .marca { color: var(--porcelana); }
+  .topo a.entrar { color: rgba(245,245,241,.8); font-weight: 600; text-decoration: none; }
+  main { position: relative; max-width: 1180px; margin: 0 auto; padding: 40px 24px 80px; display: grid; gap: 28px; }
+  h1 { font-size: clamp(2.8rem, 9vw, 6rem); font-weight: 800; letter-spacing: -0.045em; line-height: .95; max-width: 11ch; position: relative; z-index: 1; }
+  p.lead { max-width: 40ch; font-size: 1.1875rem; color: rgba(245,245,241,.72); position: relative; z-index: 1; }
+  .acoes { display: flex; gap: 10px; flex-wrap: wrap; position: relative; z-index: 1; }
+  .btn.claro { background: var(--porcelana); color: var(--tinta); border-color: var(--porcelana); }
+  .prato { position: absolute; right: -140px; top: -30px; width: min(68vw, 600px); aspect-ratio: 1; border-radius: 50%;
+    background: radial-gradient(circle at 42% 38%, #FFFFFF 0 46%, #EEF0EA 47% 52%, #FFFFFF 53% 64%, #DADDD5 65% 67%, transparent 68%);
+    filter: drop-shadow(0 50px 50px rgba(0,0,0,.5)); display: grid; place-items: center; opacity: .95; }
+  .prato span { width: 34%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #F7D48A, var(--dende)); box-shadow: 0 20px 30px -12px rgba(107,74,0,.8); }
+  .passos { list-style: none; padding: 0; margin: 40px 0 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); position: relative; z-index: 1; }
+  .passos li { padding: 20px; border-radius: var(--r-l); background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); }
+  .passos b { display: block; font: 700 1.125rem var(--f-titulo); margin-bottom: 6px; }
+  .passos span { color: rgba(245,245,241,.68); font-size: .9375rem; }
+  @media (max-width: 700px) { .prato { right: -160px; top: 120px; opacity: .35; } }
+</style>
+</head>
+<body>
+<header class="topo">
+  <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg> Menu 3D</span>
+  <a class="entrar" href="/estudio">Entrar</a>
+</header>
+<main>
+  <div class="prato" aria-hidden="true"><span></span></div>
+  <h1>O prato chega à mesa antes do pedido.</h1>
+  <p class="lead">O cliente lê o QR, vê cada prato em 3D e põe-no em cima da mesa, ao tamanho real. Depois pede, sem esperar pelo empregado.</p>
+  <div class="acoes">
+    <a class="btn acento" href="/estudio">Criar o menu do meu restaurante</a>
+  </div>
+  <ol class="passos">
+    <li><b>Fotografa ou carrega</b><span>O prato vira modelo 3D, à escala real e leve para o telemóvel.</span></li>
+    <li><b>Imprime os QR</b><span>Um por mesa. O pedido chega à cozinha já com o número da mesa.</span></li>
+    <li><b>O menu de papel ganha vida</b><span>Aponta a câmara ao menu impresso e os pratos aparecem por cima.</span></li>
+  </ol>
+</main>
+</body>
+</html>

@@ -1,0 +1,71 @@
+@font-face{font-family:"Bricolage Grotesque";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/bricolage/bricolage-grotesque-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Bricolage Grotesque";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/bricolage/bricolage-grotesque-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Bricolage Grotesque";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/bricolage/bricolage-grotesque-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Bricolage Grotesque";font-style:normal;font-weight:800;font-display:swap;src:url(/vendor/letras/bricolage/bricolage-grotesque-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/fraunces/fraunces-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/fraunces/fraunces-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/fraunces/fraunces-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Fraunces";font-style:normal;font-weight:800;font-display:swap;src:url(/vendor/letras/fraunces/fraunces-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:"Playfair Display";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/playfair/playfair-display-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Playfair Display";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/playfair/playfair-display-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Playfair Display";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/playfair/playfair-display-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Playfair Display";font-style:normal;font-weight:800;font-display:swap;src:url(/vendor/letras/playfair/playfair-display-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:"DM Serif Display";font-style:normal;font-weight:100 900;font-display:swap;src:url(/vendor/letras/dmserif/dm-serif-display-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/cormorant/cormorant-garamond-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/cormorant/cormorant-garamond-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Cormorant Garamond";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/cormorant/cormorant-garamond-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Syne";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/syne/syne-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Syne";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/syne/syne-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Syne";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/syne/syne-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Syne";font-style:normal;font-weight:800;font-display:swap;src:url(/vendor/letras/syne/syne-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:"Space Grotesk";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/spacegrotesk/space-grotesk-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Space Grotesk";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/spacegrotesk/space-grotesk-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Space Grotesk";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/spacegrotesk/space-grotesk-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Archivo Black";font-style:normal;font-weight:100 900;font-display:swap;src:url(/vendor/letras/archivoblack/archivo-black-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Abril Fatface";font-style:normal;font-weight:100 900;font-display:swap;src:url(/vendor/letras/abril/abril-fatface-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Josefin Sans";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/josefin/josefin-sans-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Josefin Sans";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/josefin/josefin-sans-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Josefin Sans";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/josefin/josefin-sans-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Unbounded";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/unbounded/unbounded-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Unbounded";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/unbounded/unbounded-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Unbounded";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/unbounded/unbounded-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Unbounded";font-style:normal;font-weight:800;font-display:swap;src:url(/vendor/letras/unbounded/unbounded-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/caveat/caveat-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Caveat";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/caveat/caveat-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/caveat/caveat-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Figtree";font-style:normal;font-weight:400;font-display:swap;src:url(/vendor/letras/figtree/figtree-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Figtree";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/figtree/figtree-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Figtree";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/figtree/figtree-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Figtree";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/figtree/figtree-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"DM Sans";font-style:normal;font-weight:400;font-display:swap;src:url(/vendor/letras/dmsans/dm-sans-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"DM Sans";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/dmsans/dm-sans-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"DM Sans";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/dmsans/dm-sans-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"DM Sans";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/dmsans/dm-sans-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Outfit";font-style:normal;font-weight:400;font-display:swap;src:url(/vendor/letras/outfit/outfit-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Outfit";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/outfit/outfit-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Outfit";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/outfit/outfit-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Outfit";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/outfit/outfit-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Manrope";font-style:normal;font-weight:400;font-display:swap;src:url(/vendor/letras/manrope/manrope-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Manrope";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/manrope/manrope-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Manrope";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/manrope/manrope-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Manrope";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/manrope/manrope-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Work Sans";font-style:normal;font-weight:400;font-display:swap;src:url(/vendor/letras/worksans/work-sans-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Work Sans";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/worksans/work-sans-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Work Sans";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/worksans/work-sans-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Work Sans";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/worksans/work-sans-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Karla";font-style:normal;font-weight:400;font-display:swap;src:url(/vendor/letras/karla/karla-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Karla";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/karla/karla-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Karla";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/karla/karla-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Karla";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/karla/karla-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Nunito Sans";font-style:normal;font-weight:400;font-display:swap;src:url(/vendor/letras/nunitosans/nunito-sans-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Nunito Sans";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/nunitosans/nunito-sans-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Nunito Sans";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/nunitosans/nunito-sans-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Nunito Sans";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/nunitosans/nunito-sans-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Lora";font-style:normal;font-weight:400;font-display:swap;src:url(/vendor/letras/lora/lora-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Lora";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/lora/lora-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Lora";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/lora/lora-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Lora";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/lora/lora-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Libre Franklin";font-style:normal;font-weight:400;font-display:swap;src:url(/vendor/letras/librefranklin/libre-franklin-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Libre Franklin";font-style:normal;font-weight:500;font-display:swap;src:url(/vendor/letras/librefranklin/libre-franklin-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Libre Franklin";font-style:normal;font-weight:600;font-display:swap;src:url(/vendor/letras/librefranklin/libre-franklin-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Libre Franklin";font-style:normal;font-weight:700;font-display:swap;src:url(/vendor/letras/librefranklin/libre-franklin-latin-700-normal.woff2) format("woff2")}

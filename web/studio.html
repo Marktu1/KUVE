@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#F5F5F1">
+<title>Estúdio · Menu 3D</title>
+<link rel="stylesheet" href="/vendor/letras/bricolage.css">
+<link rel="stylesheet" href="/vendor/letras/figtree.css">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/studio.css">
+<script type="importmap">
+{ "imports": {
+  "three": "/vendor/three150/three.module.js",
+  "three/addons/": "/vendor/three150/addons/"
+} }
+</script>
+<script type="module" src="/vendor/model-viewer.min.js"></script>
+</head>
+<body>
+
+<!-- ============ ENTRADA ============ -->
+<main id="entrada" class="entrada oculto">
+  <section class="entrada-heroi">
+    <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg> Menu 3D</span>
+    <div class="heroi-prato" aria-hidden="true">
+      <div class="heroi-sombra"></div>
+      <div class="heroi-disco"><span class="heroi-cubo"><svg class="ic"><use href="/img/icones.svg#cubo"/></svg></span></div>
+    </div>
+    <h1>Cada prato, na mesa do cliente, antes de ele pedir.</h1>
+    <p>Carrega o modelo ou tira fotos, ajusta o tamanho real e partilha o menu por QR. O cliente vê o prato em 3D e pede daqui.</p>
+  </section>
+
+  <section class="entrada-forms">
+    <div class="alternar" role="tablist" aria-label="Entrar ou criar">
+      <button role="tab" aria-selected="true" data-form="f-criar">Criar restaurante</button>
+      <button role="tab" aria-selected="false" data-form="f-entrar">Já tenho conta</button>
+    </div>
+    <form id="f-criar" class="form-entrada">
+      <label class="campo"><span>Nome do restaurante</span><input name="name" type="text" required maxlength="80" autocomplete="organization" placeholder="Ex.: Restaurante Kianda"></label>
+      <label class="campo"><span>WhatsApp para receber pedidos</span><input name="whatsapp" type="tel" placeholder="+244 9xx xxx xxx"><small>Com o indicativo do país. Podes deixar em branco e pôr depois.</small></label>
+      <label class="campo"><span>Número de mesas</span><input name="tables" type="number" min="1" max="200" value="10"></label>
+      <button class="btn acento grande" type="submit">Criar restaurante</button>
+    </form>
+    <form id="f-entrar" class="form-entrada oculto">
+      <label class="campo"><span>Código do restaurante</span><input name="id" type="text" required autocomplete="off"></label>
+      <label class="campo"><span>Chave de administração</span><input name="key" type="password" required autocomplete="current-password"></label>
+      <button class="btn grande" type="submit">Abrir estúdio</button>
+    </form>
+  </section>
+</main>
+
+<dialog id="d-chave" class="dialogo">
+  <h2>Guarda esta chave</h2>
+  <p class="mudo">É a única forma de voltares a entrar no estúdio noutro aparelho. Não a partilhes com clientes.</p>
+  <dl class="chave">
+    <dt>Código do restaurante</dt><dd id="chave-id"></dd>
+    <dt>Chave de administração</dt><dd id="chave-key"></dd>
+  </dl>
+  <form method="dialog"><button class="btn">Já guardei</button></form>
+</dialog>
+
+<!-- ============ ESTÚDIO ============ -->
+<div id="app" class="app oculto">
+  <aside class="lateral">
+    <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg> Menu 3D</span>
+    <div class="restaurante-chip">
+      <span id="avatar" class="avatar"></span>
+      <span class="restaurante-texto">
+        <strong id="nome-restaurante"></strong>
+        <a id="link-menu" target="_blank" rel="noopener">Ver o menu do cliente</a>
+      </span>
+    </div>
+    <nav class="abas" role="tablist" aria-label="Secções">
+      <button role="tab" data-aba="painel" aria-selected="true"><svg class="ic"><use href="/img/icones.svg#grafico"/></svg>Painel</button>
+      <button role="tab" data-aba="pratos"><svg class="ic"><use href="/img/icones.svg#pratos"/></svg>Pratos</button>
+      <button role="tab" data-aba="pedidos"><svg class="ic"><use href="/img/icones.svg#pedidos"/></svg>Pedidos <span id="badge-pedidos" class="badge oculto"></span></button>
+      <button role="tab" data-aba="impresso"><svg class="ic"><use href="/img/icones.svg#cena"/></svg>Menu em AR</button>
+      <button role="tab" data-aba="qr"><svg class="ic"><use href="/img/icones.svg#qr"/></svg>QR das mesas</button>
+      <button role="tab" data-aba="equipa"><svg class="ic"><use href="/img/icones.svg#equipa"/></svg>Equipa</button>
+      <button role="tab" data-aba="restaurante"><svg class="ic"><use href="/img/icones.svg#loja"/></svg>Restaurante</button>
+    </nav>
+    <button id="sair" class="btn fantasma pequeno sair"><svg class="ic"><use href="/img/icones.svg#sair"/></svg>Sair</button>
+  </aside>
+
+  <main class="conteudo">
+    <div id="aviso-conta" class="aviso-conta oculto"></div>
+
+    <!-- PAINEL DO GERENTE -->
+    <section id="aba-painel" class="aba">
+      <header class="cab-pagina">
+        <div>
+          <h1>Painel</h1>
+          <p class="mudo" id="painel-sub">Como está a correr o teu restaurante.</p>
+        </div>
+        <div class="segmentado periodo" role="tablist" aria-label="Período">
+          <button data-dias="7">7 dias</button>
+          <button data-dias="30" aria-selected="true">30 dias</button>
+          <button data-dias="90">90 dias</button>
+        </div>
+      </header>
+      <div id="painel-kpis" class="kpis"></div>
+      <div class="painel-grelha">
+        <div class="cartao grafico" id="g-vendas"></div>
+        <div class="cartao grafico" id="g-pedidos"></div>
+        <div class="cartao bloco-painel" id="b-vendidos"></div>
+        <div class="cartao bloco-painel" id="b-3d"></div>
+        <div class="cartao bloco-painel largo" id="b-horas"></div>
+        <div class="cartao bloco-painel" id="b-atencao"></div>
+        <div class="cartao bloco-painel" id="b-mesas"></div>
+      </div>
+    </section>
+
+    <!-- PRATOS -->
+    <section id="aba-pratos" class="aba oculto">
+      <header class="cab-pagina">
+        <div>
+          <h1>Pratos</h1>
+          <p class="mudo" id="resumo-pratos"></p>
+        </div>
+        <button id="novo-prato" class="btn acento"><svg class="ic"><use href="/img/icones.svg#mais"/></svg>Novo prato</button>
+      </header>
+
+      <div class="pratos-grelha">
+        <ul id="lista-pratos" class="lista-pratos"></ul>
+
+        <div id="editor-vazio" class="vazio">
+          <div class="vazio-prato" aria-hidden="true"></div>
+          <h2>Começa pelo primeiro prato</h2>
+          <p class="mudo">Cria um prato, carrega o modelo 3D ou gera-o a partir de fotos, e põe-no à escala real.</p>
+        </div>
+
+        <form id="editor" class="editor oculto" autocomplete="off">
+          <div class="cartao editor-3d">
+            <div class="cartao-cab">
+              <h3>Modelo 3D</h3>
+              <span id="medidas" class="etiqueta"></span>
+            </div>
+            <div class="palco">
+              <model-viewer id="mv" camera-controls touch-action="pan-y" shadow-intensity="1.1" exposure="1.05" tone-mapping="aces"
+                environment-image="neutral" interaction-prompt="none" ar ar-scale="fixed"></model-viewer>
+              <div id="palco-vazio" class="palco-vazio">
+                <svg class="ic"><use href="/img/icones.svg#cubo"/></svg>
+                <p>Ainda sem modelo 3D</p>
+              </div>
+            </div>
+            <div class="fontes-3d">
+              <label class="btn secundario pequeno"><svg class="ic"><use href="/img/icones.svg#upload"/></svg>Carregar GLB<input id="in-glb" type="file" accept=".glb" class="sr"></label>
+              <button type="button" id="abrir-ia" class="btn secundario pequeno"><svg class="ic"><use href="/img/icones.svg#ia"/></svg>Gerar com IA</button>
+            </div>
+
+            <fieldset id="preparar" class="preparar oculto">
+              <legend>Preparar para AR</legend>
+              <label class="campo"><span>Tamanho real do prato (cm)</span>
+                <input id="p-cm" type="number" min="1" max="200" step="0.5" placeholder="26">
+                <small>A maior largura do prato servido. É isto que dá a escala real na mesa.</small>
+              </label>
+              <label class="campo deslizante"><span>Rugosidade <output id="o-rough"></output></span><input id="p-rough" type="range" min="0" max="1" step="0.05"></label>
+              <label class="campo deslizante"><span>Metalicidade <output id="o-metal"></output></span><input id="p-metal" type="range" min="0" max="1" step="0.05"></label>
+              <label class="campo deslizante"><span>Verniz (bebidas, molhos) <output id="o-coat"></output></span><input id="p-coat" type="range" min="0" max="1" step="0.05" value="0"></label>
+              <div class="dois">
+                <label class="campo"><span>Texturas até</span>
+                  <select id="p-tex"><option value="2048">2048 px</option><option value="1024" selected>1024 px</option><option value="512">512 px</option></select>
+                </label>
+                <label class="campo"><span>Polígonos até</span>
+                  <select id="p-tri"><option value="150000">150 mil</option><option value="60000" selected>60 mil</option><option value="25000">25 mil</option></select>
+                </label>
+              </div>
+              <button type="button" id="aplicar-3d" class="btn">Preparar e guardar modelo</button>
+              <p id="estado-3d" class="estado" aria-live="polite"></p>
+            </fieldset>
+          </div>
+
+          <div class="cartao editor-dados">
+            <div class="cartao-cab">
+              <h3 id="titulo-editor">Novo prato</h3>
+              <div class="interruptores">
+                <label class="interruptor"><input id="in-esgotado" type="checkbox"><span>Esgotado hoje</span></label>
+                <label class="interruptor"><input name="visible" type="checkbox" checked><span>Visível no menu</span></label>
+              </div>
+            </div>
+            <label class="campo"><span>Nome</span><input name="name" type="text" required maxlength="80"></label>
+            <div class="dois">
+              <label class="campo"><span>Categoria</span><select name="category" id="sel-categoria"></select></label>
+              <label class="campo"><span>Preço</span><input name="price" type="number" min="0" step="50" required></label>
+            </div>
+            <label class="campo"><span>Descrição</span><textarea name="description" maxlength="600"></textarea></label>
+            <label class="campo"><span>Ingredientes</span><input name="ingredients" type="text" maxlength="400" placeholder="Peixe grelhado, banana-pão, mandioca"></label>
+            <div class="dois">
+              <label class="campo"><span>Calorias (kcal)</span><input name="calories" type="number" min="0"></label>
+              <label class="campo"><span>Animação no 3D</span>
+                <select name="animation"><option value="spin">Rodar devagar</option><option value="pop">Aparecer com salto</option><option value="none">Parado</option></select>
+              </label>
+            </div>
+            <fieldset class="grupo">
+              <legend>Alergénios</legend>
+              <div id="alergenos" class="chips"></div>
+            </fieldset>
+            <fieldset class="grupo">
+              <legend>Tamanhos ou variantes</legend>
+              <div id="variantes" class="variantes-lista"></div>
+              <button type="button" id="add-variante" class="btn fantasma pequeno"><svg class="ic"><use href="/img/icones.svg#mais"/></svg>Adicionar variante</button>
+            </fieldset>
+            <fieldset class="grupo">
+              <legend>Fotos</legend>
+              <div id="fotos" class="fotos"></div>
+              <label class="btn fantasma pequeno"><svg class="ic"><use href="/img/icones.svg#imagem"/></svg>Adicionar foto<input id="in-foto" type="file" accept="image/png,image/jpeg,image/webp" class="sr" multiple></label>
+            </fieldset>
+            <div class="acoes-editor">
+              <button type="button" id="apagar-prato" class="btn fantasma"><svg class="ic"><use href="/img/icones.svg#lixo"/></svg>Apagar</button>
+              <button class="btn acento" type="submit">Guardar prato</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- PEDIDOS -->
+    <section id="aba-pedidos" class="aba oculto">
+      <header class="cab-pagina">
+        <div>
+          <h1>Pedidos</h1>
+          <p class="mudo">Atualiza sozinho a cada 5 segundos. Entregues e cancelados saem do quadro.</p>
+        </div>
+      </header>
+      <div class="quadro">
+        <div class="coluna" data-estado="novo"><h3>Novos <span class="contagem"></span></h3><ol></ol></div>
+        <div class="coluna" data-estado="a preparar"><h3>A preparar <span class="contagem"></span></h3><ol></ol></div>
+        <div class="coluna" data-estado="pronto"><h3>Prontos <span class="contagem"></span></h3><ol></ol></div>
+      </div>
+    </section>
+
+    <!-- MENU EM AR (editor de cena) -->
+    <section id="aba-impresso" class="aba oculto">
+      <header class="cab-pagina">
+        <div>
+          <h1>Menu impresso em AR</h1>
+          <p class="mudo">O cliente aponta a câmara ao menu de papel e a cena que montares aqui aparece por cima.</p>
+        </div>
+        <div class="acoes-cab">
+          <a id="abrir-impresso" class="btn secundario oculto" target="_blank" rel="noopener"><svg class="ic"><use href="/img/icones.svg#camara"/></svg>Testar no telemóvel</a>
+          <button id="guardar-cena" class="btn acento" disabled>Guardar cena</button>
+        </div>
+      </header>
+
+      <div id="cena-vazia" class="vazio cartao oculto">
+        <div class="vazio-folha" aria-hidden="true"></div>
+        <h2>Começa pela imagem do menu</h2>
+        <p class="mudo">Usa a imagem tal como vai ser impressa, com bastante detalhe e contraste. O reconhecimento prepara-se aqui no browser, em segundos.</p>
+        <label class="btn acento"><svg class="ic"><use href="/img/icones.svg#upload"/></svg>Carregar imagem do menu<input class="in-menu-img sr" type="file" accept="image/png,image/jpeg"></label>
+      </div>
+
+      <div id="cena-editor" class="cena-editor oculto">
+        <div class="cartao tela">
+          <div class="tela-barra">
+            <div class="segmentado" role="tablist" aria-label="Vista">
+              <button role="tab" aria-selected="true" data-vista="planta">Planta</button>
+              <button role="tab" aria-selected="false" data-vista="3d">Pré-visualização 3D</button>
+            </div>
+            <span id="estado-cena" class="estado"></span>
+          </div>
+          <div id="vista-planta" class="vista-planta">
+            <div id="folha" class="folha"><img id="img-menu" alt="Menu impresso" draggable="false"><div id="marcadores"></div></div>
+          </div>
+          <div id="vista-3d" class="vista-3d oculto">
+            <div id="palco-3d"></div>
+            <p class="dica-3d"><svg class="ic"><use href="/img/icones.svg#toque"/></svg>Arrasta para rodar. Toca nos pontos dourados para testar.</p>
+          </div>
+          <div class="tela-rodape">
+            <label class="btn fantasma pequeno"><svg class="ic"><use href="/img/icones.svg#imagem"/></svg>Trocar imagem do menu<input class="in-menu-img sr" type="file" accept="image/png,image/jpeg"></label>
+            <button id="compilar" class="btn pequeno oculto">Preparar reconhecimento</button>
+            <span id="estado-impresso" class="estado" aria-live="polite"></span>
+          </div>
+        </div>
+
+        <aside class="cartao painel">
+          <div class="painel-bloco">
+            <h3>Adicionar</h3>
+            <div class="adicionar-itens">
+              <button id="add-prato" class="tipo-item"><svg class="ic"><use href="/img/icones.svg#pratos"/></svg>Prato 3D</button>
+              <label class="tipo-item"><svg class="ic"><use href="/img/icones.svg#imagem"/></svg>Imagem<input id="add-imagem" type="file" accept="image/png,image/jpeg,image/webp" class="sr"></label>
+              <button id="add-texto" class="tipo-item"><svg class="ic"><use href="/img/icones.svg#texto"/></svg>Texto</button>
+            </div>
+          </div>
+          <div class="painel-bloco">
+            <h3>Na cena</h3>
+            <ul id="camadas" class="camadas"></ul>
+          </div>
+          <div id="propriedades" class="painel-bloco propriedades oculto"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- QR -->
+    <section id="aba-qr" class="aba oculto">
+      <header class="cab-pagina">
+        <div>
+          <h1>QR das mesas</h1>
+          <p class="mudo">Cada QR abre o menu já com o número da mesa, para o pedido chegar identificado.</p>
+        </div>
+        <button id="imprimir-qr" class="btn"><svg class="ic"><use href="/img/icones.svg#imprimir"/></svg>Imprimir</button>
+      </header>
+      <div id="grelha-qr" class="grelha-qr"></div>
+    </section>
+
+    <!-- EQUIPA -->
+    <section id="aba-equipa" class="aba oculto">
+      <header class="cab-pagina">
+        <div>
+          <h1>Equipa</h1>
+          <p class="mudo">Cada pessoa entra com um PIN de 6 dígitos e só vê os pedidos e os pratos esgotados. Não mexe no menu, nos preços nem vê a faturação.</p>
+        </div>
+      </header>
+      <div class="equipa-grelha">
+        <div class="cartao equipa-lista">
+          <form id="f-membro" class="f-membro">
+            <label class="campo"><span>Nome</span><input name="nome" type="text" maxlength="40" required placeholder="Ex.: Joana"></label>
+            <label class="campo"><span>Função</span>
+              <select name="funcao"><option value="rececao">Receção</option><option value="empregado">Empregado de mesa</option><option value="cozinha">Cozinha</option></select>
+            </label>
+            <button class="btn acento" type="submit"><svg class="ic"><use href="/img/icones.svg#mais"/></svg>Adicionar</button>
+          </form>
+          <div id="pin-novo" class="pin-novo oculto"></div>
+          <ul id="membros" class="membros"></ul>
+        </div>
+        <aside class="cartao equipa-como">
+          <h3>Como a equipa entra</h3>
+          <ol>
+            <li>No tablet ou telemóvel do balcão, abre <a id="link-equipa" target="_blank" rel="noopener"></a></li>
+            <li>Escreve o código do restaurante: <code id="codigo-equipa"></code></li>
+            <li>Escreve o PIN de 6 dígitos da pessoa.</li>
+          </ol>
+          <p class="mudo pequeno">Se alguém sair da equipa, desativa-o aqui: o acesso termina logo em todos os aparelhos.</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- RESTAURANTE -->
+    <section id="aba-restaurante" class="aba oculto">
+      <header class="cab-pagina">
+        <div>
+          <h1>Restaurante</h1>
+          <p class="mudo">Como o teu restaurante aparece no menu do cliente.</p>
+        </div>
+      </header>
+      <div class="rest-grelha">
+        <form id="f-rest" class="cartao form-rest">
+          <div class="logo-linha">
+            <img id="logo-prev" alt="" class="oculto">
+            <span id="logo-vazio" class="avatar grande"></span>
+            <label class="btn secundario pequeno"><svg class="ic"><use href="/img/icones.svg#upload"/></svg>Carregar logótipo<input id="in-logo" type="file" accept="image/png,image/jpeg,image/webp" class="sr"></label>
+          </div>
+          <label class="campo"><span>Nome</span><input name="name" type="text" maxlength="80" required></label>
+          <label class="campo"><span>Frase de apresentação</span><input name="tagline" type="text" maxlength="120" placeholder="Cozinha angolana desde 1998"></label>
+          <div class="dois">
+            <label class="campo"><span>WhatsApp dos pedidos</span><input name="whatsapp" type="tel"></label>
+            <label class="campo"><span>Moeda</span><input name="currency" type="text" maxlength="6"></label>
+          </div>
+          <div class="dois">
+            <label class="campo"><span>Cor da marca</span><input name="color" type="color"><small id="cor-bloqueada" class="oculto">A identidade do teu menu é gerida pela equipa Menu 3D.</small></label>
+            <label class="campo"><span>Mesas</span><input name="tables" type="number" min="1" max="200"></label>
+          </div>
+          <label class="campo"><span>Categorias do menu</span><input name="categories" type="text"><small>Separadas por vírgulas, pela ordem em que aparecem.</small></label>
+          <div class="acoes-editor"><button class="btn acento" type="submit">Guardar</button></div>
+        </form>
+        <div class="cartao sessao">
+          <h3>Acesso</h3>
+          <p class="mudo">Código do restaurante</p>
+          <code id="sessao-id"></code>
+          <p class="mudo pequeno">Para entrares noutro aparelho precisas deste código e da chave de administração.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- IA -->
+<dialog id="d-ia" class="dialogo">
+  <form id="f-ia" method="dialog">
+    <div>
+      <h2>Gerar o 3D a partir de fotos</h2>
+      <p class="mudo">Prato ao centro, fundo liso, luz boa. Para pratos com volume, junta 2 a 4 ângulos: frente, 45° e de cima.</p>
+    </div>
+    <label class="campo"><span>Fotos (1 a 4)</span><input id="ia-fotos" type="file" accept="image/png,image/jpeg,image/webp" multiple required></label>
+    <div id="ia-prev" class="fotos"></div>
+    <label class="campo"><span>Qualidade</span>
+      <select id="ia-qualidade"><option value="alto">Alta (mais lenta)</option><option value="rapido">Rápida</option></select>
+    </label>
+    <p id="ia-estado" class="estado" aria-live="polite"></p>
+    <div class="acoes-editor">
+      <button class="btn fantasma" value="cancelar" formnovalidate>Fechar</button>
+      <button id="ia-enviar" class="btn acento" value="enviar"><svg class="ic"><use href="/img/icones.svg#ia"/></svg>Gerar modelo</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module" src="/js/studio.js"></script>
+</body>
+</html>

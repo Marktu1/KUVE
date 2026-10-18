@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#18201D">
+<meta name="robots" content="noindex">
+<title>Plataforma · Menu 3D</title>
+<link rel="stylesheet" href="/vendor/letras/bricolage.css">
+<link rel="stylesheet" href="/vendor/letras/figtree.css">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/plataforma.css">
+<link rel="stylesheet" href="/css/identidade.css">
+</head>
+<body>
+
+<!-- Entrada -->
+<main id="entrada" class="entrada oculto">
+  <form id="f-entrar" class="cartao entrar">
+    <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg> Menu 3D</span>
+    <div>
+      <h1>Painel da plataforma</h1>
+      <p class="mudo">Só para o dono do Menu 3D. A chave foi criada no primeiro arranque do servidor.</p>
+    </div>
+    <label class="campo"><span>Chave da plataforma</span><input id="chave" type="password" required autocomplete="current-password"></label>
+    <button class="btn acento grande" type="submit">Entrar</button>
+  </form>
+</main>
+
+<!-- Painel -->
+<div id="app" class="oculto">
+  <header class="barra">
+    <div class="barra-in">
+      <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg> Menu 3D <span class="sub-marca">Plataforma</span></span>
+      <div class="barra-acoes">
+        <span id="atualizado" class="atualizado"></span>
+        <button id="novo" class="btn acento pequeno"><svg class="ic"><use href="/img/icones.svg#mais"/></svg>Novo restaurante</button>
+        <button id="sair" class="btn fantasma-claro pequeno icone" aria-label="Sair"><svg class="ic"><use href="/img/icones.svg#sair"/></svg></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="painel">
+    <section class="cabeca">
+      <div>
+        <h1 id="saudacao">Visão geral</h1>
+        <p class="mudo">Últimos 30 dias, comparados com os 30 dias anteriores.</p>
+      </div>
+      <div id="alertas" class="alertas"></div>
+    </section>
+
+    <section id="kpis" class="kpis" aria-label="Indicadores"></section>
+
+    <section class="graficos" aria-label="Atividade diária">
+      <div class="cartao grafico" id="g-visitas"></div>
+      <div class="cartao grafico" id="g-ar"></div>
+      <div class="cartao grafico" id="g-pedidos"></div>
+    </section>
+
+    <section class="cartao tabela-cartao">
+      <div class="tabela-cab">
+        <h2>Restaurantes</h2>
+        <div class="filtros">
+          <input id="procurar" type="search" placeholder="Procurar restaurante" aria-label="Procurar restaurante">
+          <div class="segmentado" role="tablist" aria-label="Filtrar">
+            <button data-f="todos" aria-selected="true">Todos</button>
+            <button data-f="ativo">Ativos</button>
+            <button data-f="atraso">Em atraso</button>
+            <button data-f="suspenso">Suspensos</button>
+          </div>
+        </div>
+      </div>
+      <div class="tabela-rolar">
+        <table class="tabela">
+          <thead>
+            <tr>
+              <th>Restaurante</th><th>Estado</th><th>Plano</th><th>Pago até</th>
+              <th class="num">Pratos</th><th class="num">Visitas</th><th class="num">AR</th><th class="num">Pedidos</th><th class="num">Receita</th><th class="num">Espaço</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="linhas"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="cartao ia">
+      <div class="tabela-cab">
+        <h2>IA · foto → 3D</h2>
+        <span id="worker" class="pilula"></span>
+      </div>
+      <div id="ia-contagens" class="ia-contagens"></div>
+      <div class="tabela-rolar">
+        <table class="tabela compacta">
+          <thead><tr><th>Quando</th><th>Restaurante</th><th>Estado</th><th>Fotos</th><th>Worker</th><th></th></tr></thead>
+          <tbody id="ia-linhas"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Gerir restaurante -->
+<div id="gaveta" class="gaveta oculto" role="dialog" aria-modal="true" aria-labelledby="g-nome">
+  <form id="f-gerir" class="gaveta-corpo">
+    <header class="gaveta-cab">
+      <span id="g-avatar" class="avatar"></span>
+      <div>
+        <h2 id="g-nome"></h2>
+        <a id="g-menu" class="mudo pequeno" target="_blank" rel="noopener"></a>
+      </div>
+      <button type="button" class="btn fantasma icone" data-fechar aria-label="Fechar"><svg class="ic"><use href="/img/icones.svg#fechar"/></svg></button>
+    </header>
+
+    <dl id="g-numeros" class="g-numeros"></dl>
+
+    <div class="campo"><span>Estado</span>
+      <div class="segmentado" role="group">
+        <button type="button" data-estado="ativo">Ativo</button>
+        <button type="button" data-estado="suspenso">Suspenso</button>
+      </div>
+      <small>Suspenso: o menu e os pedidos deixam de funcionar para os clientes. O estúdio continua acessível.</small>
+    </div>
+    <div class="dois">
+      <label class="campo"><span>Plano</span>
+        <select name="plano">
+          <option value="teste">Teste</option><option value="essencial">Essencial</option>
+          <option value="profissional">Profissional</option><option value="gratis">Grátis (parceiro)</option>
+        </select>
+      </label>
+      <label class="campo"><span>Pago até</span><input name="pagoAte" type="date"></label>
+    </div>
+    <div class="atalhos">
+      <button type="button" class="btn secundario pequeno" data-mais="30">+30 dias</button>
+      <button type="button" class="btn secundario pequeno" data-mais="90">+3 meses</button>
+      <button type="button" class="btn secundario pequeno" data-mais="365">+1 ano</button>
+    </div>
+    <label class="campo"><span>Contacto</span><input name="contacto" type="text" maxlength="120" placeholder="Nome, telefone ou email do responsável"></label>
+    <label class="campo"><span>Notas internas</span><textarea name="notas" maxlength="1000" placeholder="Só tu vês estas notas"></textarea></label>
+
+    <div class="g-acoes">
+      <button type="button" id="g-identidade" class="btn acento"><svg class="ic"><use href="/img/icones.svg#pincel"/></svg>Personalizar o menu</button>
+      <button type="button" id="g-estudio" class="btn secundario"><svg class="ic"><use href="/img/icones.svg#loja"/></svg>Abrir o estúdio</button>
+      <button type="button" id="g-chave" class="btn fantasma">Gerar nova chave do estúdio</button>
+    </div>
+    <p id="g-chave-nova" class="chave-nova oculto"></p>
+
+    <footer class="gaveta-rodape">
+      <button type="button" class="btn fantasma" data-fechar>Cancelar</button>
+      <button class="btn acento" type="submit">Guardar</button>
+    </footer>
+  </form>
+</div>
+
+<!-- Novo restaurante -->
+<dialog id="d-novo" class="dialogo">
+  <form id="f-novo" method="dialog">
+    <div>
+      <h2>Novo restaurante</h2>
+      <p class="mudo">Crias a conta e entregas ao restaurante o código e a chave do estúdio.</p>
+    </div>
+    <label class="campo"><span>Nome do restaurante</span><input name="name" type="text" required maxlength="80"></label>
+    <div class="dois">
+      <label class="campo"><span>WhatsApp dos pedidos</span><input name="whatsapp" type="tel" placeholder="+244 9xx xxx xxx"></label>
+      <label class="campo"><span>Mesas</span><input name="tables" type="number" min="1" max="200" value="10"></label>
+    </div>
+    <label class="campo"><span>Contacto do responsável</span><input name="contacto" type="text" maxlength="120"></label>
+    <div class="dois">
+      <label class="campo"><span>Plano</span>
+        <select name="plano"><option value="teste">Teste</option><option value="essencial">Essencial</option><option value="profissional">Profissional</option><option value="gratis">Grátis (parceiro)</option></select>
+      </label>
+      <label class="campo"><span>Pago até</span><input name="pagoAte" type="date"></label>
+    </div>
+    <div id="novo-resultado" class="chave-nova oculto"></div>
+    <div class="acoes">
+      <button class="btn fantasma" value="cancelar" formnovalidate>Fechar</button>
+      <button id="novo-criar" class="btn acento" value="criar">Criar restaurante</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Identidade do menu: cada restaurante com a sua cara -->
+<div id="identidade" class="identidade oculto" role="dialog" aria-modal="true" aria-labelledby="id-nome">
+  <header class="id-barra">
+    <button id="id-voltar" class="btn fantasma-claro pequeno"><svg class="ic" style="transform:scaleX(-1)"><use href="/img/icones.svg#seta"/></svg>Voltar</button>
+    <div class="id-titulo">
+      <span id="id-avatar" class="avatar"></span>
+      <span><strong id="id-nome"></strong><small id="id-estado"></small></span>
+    </div>
+    <div class="id-acoes">
+      <a id="id-ver" class="btn fantasma-claro pequeno" target="_blank" rel="noopener"><svg class="ic"><use href="/img/icones.svg#olho"/></svg>Ver o menu publicado</a>
+      <button id="id-publicar" class="btn acento pequeno">Publicar</button>
+    </div>
+  </header>
+
+  <div class="id-corpo">
+    <aside class="id-controlos">
+      <nav class="id-abas" role="tablist" aria-label="Secções">
+        <button role="tab" data-sec="estilo" aria-selected="true">Estilo</button>
+        <button role="tab" data-sec="cores">Cores</button>
+        <button role="tab" data-sec="letras">Letras</button>
+        <button role="tab" data-sec="forma">Forma</button>
+        <button role="tab" data-sec="conteudo">Conteúdo</button>
+        <button role="tab" data-sec="horario">Horário</button>
+        <button role="tab" data-sec="avancado">Mais</button>
+      </nav>
+
+      <div class="id-secoes">
+        <!-- ESTILO -->
+        <section data-sec="estilo">
+          <div class="id-bloco">
+            <h3>Começar de um estilo</h3>
+            <p class="mudo pequeno">Muda cores, letras, prato e disposição de uma vez. Os textos, o horário e os contactos ficam como estão.</p>
+            <div id="id-predefinidos" class="predefinidos"></div>
+          </div>
+          <div class="id-bloco">
+            <div class="id-bloco-cab"><h3>Os teus modelos</h3><button id="id-guardar-modelo" class="btn secundario pequeno"><svg class="ic"><use href="/img/icones.svg#estrela"/></svg>Guardar este estilo</button></div>
+            <div id="id-modelos" class="predefinidos"></div>
+          </div>
+          <div class="id-bloco">
+            <h3>Copiar de outro restaurante</h3>
+            <div class="linha-campos">
+              <select id="id-copiar-de" aria-label="Restaurante de onde copiar"></select>
+              <button id="id-copiar" class="btn secundario pequeno"><svg class="ic"><use href="/img/icones.svg#copiar"/></svg>Copiar estilo</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- CORES -->
+        <section data-sec="cores" class="oculto">
+          <div class="id-bloco">
+            <div class="id-bloco-cab"><h3>Cores do logo</h3><button id="id-do-logo" class="btn secundario pequeno"><svg class="ic"><use href="/img/icones.svg#ia"/></svg>Sugerir a partir do logo</button></div>
+            <p id="id-logo-ajuda" class="mudo pequeno">Lê as cores do logo e propõe três paletas que respeitam o contraste.</p>
+            <div id="id-paletas" class="paletas"></div>
+          </div>
+          <div class="id-bloco">
+            <h3>Paleta</h3>
+            <div id="id-cores" class="cores"></div>
+            <ul id="id-contraste" class="contraste"></ul>
+          </div>
+        </section>
+
+        <!-- LETRAS -->
+        <section data-sec="letras" class="oculto">
+          <div class="id-bloco"><h3>Títulos</h3><div id="id-letra-titulo" class="letras"></div></div>
+          <div class="id-bloco"><h3>Texto</h3><div id="id-letra-texto" class="letras"></div></div>
+        </section>
+
+        <!-- FORMA -->
+        <section data-sec="forma" class="oculto">
+          <div class="id-bloco"><h3>Disposição dos pratos</h3><div class="escolhas" data-campo="disposicao"></div></div>
+          <div class="id-bloco"><h3>Cabeçalho</h3><div class="escolhas" data-campo="cabecalho"></div>
+            <div id="id-capa-bloco" class="capa-bloco">
+              <span id="id-capa-prev" class="capa-prev"></span>
+              <div>
+                <label class="btn secundario pequeno"><svg class="ic"><use href="/img/icones.svg#upload"/></svg>Escolher foto de capa<input id="id-capa" type="file" accept="image/png,image/jpeg,image/webp" hidden></label>
+                <button id="id-capa-tirar" class="btn fantasma pequeno">Tirar</button>
+                <p class="mudo pequeno">Sem foto, usamos a primeira foto de um prato.</p>
+              </div>
+            </div>
+          </div>
+          <div class="id-bloco"><h3>Prato</h3><div class="escolhas pratos-escolha" data-campo="prato"></div></div>
+          <div class="id-bloco"><h3>Mesa por trás do 3D</h3><div class="escolhas" data-campo="textura"></div></div>
+          <div class="dois">
+            <div class="id-bloco"><h3>Cantos</h3><div class="escolhas compactas" data-campo="cantos"></div></div>
+            <div class="id-bloco"><h3>Botões</h3><div class="escolhas compactas" data-campo="botoes"></div></div>
+          </div>
+          <div class="dois">
+            <div class="id-bloco"><h3>Luz do 3D</h3><div class="escolhas compactas" data-campo="luz"></div></div>
+            <div class="id-bloco"><h3>Movimento</h3><div class="escolhas compactas" data-campo="movimento"></div></div>
+          </div>
+        </section>
+
+        <!-- CONTEÚDO -->
+        <section data-sec="conteudo" class="oculto">
+          <div class="id-bloco">
+            <h3>Logo</h3>
+            <div class="capa-bloco">
+              <span id="id-logo-prev" class="avatar grande"></span>
+              <div>
+                <label class="btn secundario pequeno"><svg class="ic"><use href="/img/icones.svg#upload"/></svg>Trocar logo<input id="id-logo" type="file" accept="image/png,image/jpeg,image/webp" hidden></label>
+                <p class="mudo pequeno">PNG com fundo transparente fica melhor. Aparece no menu, no separador do navegador, no estúdio e no ecrã da equipa.</p>
+              </div>
+            </div>
+            <span class="rotulo-escolha">Forma</span>
+            <div class="escolhas" data-campo="logo.forma"></div>
+            <span class="rotulo-escolha">Tamanho</span>
+            <div class="escolhas compactas" data-campo="logo.tamanho"></div>
+            <div class="id-bloco-cab"><span>Fundo branco por trás do logo</span><label class="interruptor"><input type="checkbox" data-t="logo.fundo"><span class="sr">Fundo branco por trás do logo</span></label></div>
+            <div class="id-bloco-cab"><span>Usar o logo no lugar do nome<br><small class="mudo">Para logos que já têm o nome escrito.</small></span><label class="interruptor"><input type="checkbox" data-t="logo.noLugarDoNome"><span class="sr">Usar o logo no lugar do nome</span></label></div>
+          </div>
+          <div class="id-bloco">
+            <div class="id-bloco-cab"><h3>Aviso no topo</h3><label class="interruptor"><input type="checkbox" data-t="aviso.ativo"><span class="sr">Mostrar aviso</span></label></div>
+            <label class="campo"><span>Texto</span><input type="text" maxlength="140" data-t="aviso.texto" placeholder="Hoje: muamba de galinha com 10% de desconto"></label>
+            <label class="campo"><span>Mostrar até (opcional)</span><input type="date" data-t="aviso.ate"></label>
+          </div>
+          <div class="id-bloco">
+            <h3>Sugestões do chefe</h3>
+            <p class="mudo pequeno">Até 8 pratos em destaque, no topo do menu.</p>
+            <label class="campo"><span>Título</span><input type="text" maxlength="40" data-t="textos.destaques"></label>
+            <div id="id-destaques" class="destaques-escolha"></div>
+          </div>
+          <div class="id-bloco">
+            <h3>Textos do menu</h3>
+            <label class="campo"><span>Dica do 3D</span><input type="text" maxlength="160" data-t="textos.dica3d"></label>
+            <div class="dois">
+              <label class="campo"><span>Botão do AR</span><input type="text" maxlength="40" data-t="textos.botaoAR"></label>
+              <label class="campo"><span>Botão de adicionar</span><input type="text" maxlength="40" data-t="textos.adicionar"></label>
+            </div>
+            <label class="campo"><span>Botão de enviar o pedido</span><input type="text" maxlength="40" data-t="textos.enviar"></label>
+            <label class="campo"><span>Frase no rodapé (opcional)</span><input type="text" maxlength="160" data-t="textos.rodape" placeholder="Cozinha angolana desde 1998"></label>
+          </div>
+          <div class="id-bloco">
+            <h3>Contactos e redes</h3>
+            <div class="dois">
+              <label class="campo"><span>Instagram</span><input type="text" maxlength="40" data-t="contactos.instagram" placeholder="@restaurante"></label>
+              <label class="campo"><span>TikTok</span><input type="text" maxlength="40" data-t="contactos.tiktok" placeholder="@restaurante"></label>
+            </div>
+            <div class="dois">
+              <label class="campo"><span>Facebook</span><input type="text" maxlength="80" data-t="contactos.facebook" placeholder="nome da página"></label>
+              <label class="campo"><span>Telefone</span><input type="tel" maxlength="24" data-t="contactos.telefone" placeholder="+244 9xx xxx xxx"></label>
+            </div>
+            <label class="campo"><span>Morada</span><input type="text" maxlength="140" data-t="contactos.morada" placeholder="Rua Major Kanhangulo, Luanda"></label>
+            <div class="dois">
+              <label class="campo"><span>Link do mapa</span><input type="url" maxlength="300" data-t="contactos.mapa" placeholder="https://maps.app.goo.gl/…"></label>
+              <label class="campo"><span>Site</span><input type="url" maxlength="300" data-t="contactos.site" placeholder="https://…"></label>
+            </div>
+          </div>
+        </section>
+
+        <!-- HORÁRIO -->
+        <section data-sec="horario" class="oculto">
+          <div class="id-bloco">
+            <div class="id-bloco-cab"><h3>Usar horário</h3><label class="interruptor"><input type="checkbox" data-t="horario.ativo"><span class="sr">Usar horário</span></label></div>
+            <p class="mudo pequeno">O menu mostra "Aberto" ou "Fechado · abre às…". Hora de Luanda. Se fechar depois da meia-noite, põe a hora do dia seguinte (ex.: 18:00 às 02:00).</p>
+            <div id="id-dias" class="dias"></div>
+            <button id="id-dias-todos" class="btn fantasma pequeno">Copiar segunda para todos os dias</button>
+          </div>
+          <div class="id-bloco">
+            <div class="id-bloco-cab"><h3>Aceitar pedidos fora de horas</h3><label class="interruptor"><input type="checkbox" data-t="horario.pedidosFora"><span class="sr">Aceitar pedidos fora de horas</span></label></div>
+            <p class="mudo pequeno">Desligado: fora de horas o cliente vê o menu mas não consegue enviar pedidos (o servidor também recusa).</p>
+          </div>
+        </section>
+
+        <!-- AVANÇADO -->
+        <section data-sec="avancado" class="oculto">
+          <div class="id-bloco">
+            <div class="id-bloco-cab"><h3>Mostrar "Menu 3D" no rodapé</h3><label class="interruptor"><input type="checkbox" data-t="marcaMenu3D"><span class="sr">Mostrar a marca Menu 3D</span></label></div>
+            <p class="mudo pequeno">Desliga para clientes com marca própria (por exemplo, no plano Profissional).</p>
+          </div>
+          <div class="id-bloco">
+            <div class="id-bloco-cab"><h3>Bloquear a identidade</h3><label class="interruptor"><input type="checkbox" id="id-bloquear"><span class="sr">Bloquear a identidade</span></label></div>
+            <p class="mudo pequeno">O gerente deixa de poder mudar a cor no estúdio. Fica tudo nas tuas mãos.</p>
+          </div>
+          <div class="id-bloco">
+            <h3>CSS extra</h3>
+            <p class="mudo pequeno">Para ajustes finos. Só aceita imagens que estejam no servidor (/uploads/…).</p>
+            <textarea data-t="cssExtra" class="codigo" rows="7" spellcheck="false" placeholder=".cab h1 { text-transform: uppercase; }"></textarea>
+          </div>
+          <div class="id-bloco">
+            <h3>Versões publicadas</h3>
+            <ul id="id-versoes" class="versoes"></ul>
+          </div>
+          <div class="id-bloco">
+            <button id="id-descartar" class="btn fantasma pequeno">Descartar o rascunho e voltar ao publicado</button>
+          </div>
+        </section>
+      </div>
+    </aside>
+
+    <section class="id-palco" aria-label="Pré-visualização">
+      <div class="id-palco-barra">
+        <div class="segmentado" role="group" aria-label="Vista">
+          <button data-vista="menu" aria-selected="true">Menu</button>
+          <button data-vista="prato">Prato aberto</button>
+        </div>
+        <span id="id-guardado" class="mudo pequeno"></span>
+      </div>
+      <div id="id-moldura" class="id-moldura">
+        <div class="telemovel"><iframe id="id-previa" title="Pré-visualização do menu" loading="lazy"></iframe></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="dica-grafico" class="dica-grafico oculto" role="status"></div>
+
+<script type="module" src="/js/plataforma.js"></script>
+</body>
+</html>

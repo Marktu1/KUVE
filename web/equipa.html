@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#18201D">
+<meta name="robots" content="noindex">
+<title>Equipa · Menu 3D</title>
+<link rel="stylesheet" href="/vendor/letras/bricolage.css">
+<link rel="stylesheet" href="/vendor/letras/figtree.css">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/equipa.css">
+</head>
+<body>
+
+<!-- Entrada com PIN -->
+<main id="entrada" class="entrada oculto">
+  <div class="entrada-caixa">
+    <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg> Menu 3D</span>
+    <div id="passo-codigo" class="passo">
+      <h1>Entrar na equipa</h1>
+      <p class="mudo">O código do restaurante está no estúdio do gerente, no separador Equipa.</p>
+      <form id="f-codigo" class="f-codigo">
+        <label class="campo"><span>Código do restaurante</span><input id="codigo" type="text" required autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ex.: restaurante-kianda"></label>
+        <button class="btn acento grande" type="submit">Continuar</button>
+      </form>
+    </div>
+    <div id="passo-pin" class="passo oculto">
+      <button id="trocar-codigo" class="trocar"><span id="nome-codigo"></span> · trocar</button>
+      <h1>O teu PIN</h1>
+      <div class="pontos" aria-live="polite" aria-label="PIN"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <p id="erro-pin" class="erro-pin" role="alert"></p>
+      <div class="teclado" role="group" aria-label="Teclado">
+        <button data-d="1">1</button><button data-d="2">2</button><button data-d="3">3</button>
+        <button data-d="4">4</button><button data-d="5">5</button><button data-d="6">6</button>
+        <button data-d="7">7</button><button data-d="8">8</button><button data-d="9">9</button>
+        <span></span><button data-d="0">0</button><button data-apagar aria-label="Apagar">⌫</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Trabalho -->
+<div id="app" class="oculto">
+  <header class="barra">
+    <div class="quem">
+      <span id="avatar" class="avatar"></span>
+      <span><strong id="rest-nome"></strong><small id="membro-nome"></small></span>
+    </div>
+    <nav class="abas" role="tablist">
+      <button role="tab" data-aba="pedidos" aria-selected="true">Pedidos <span id="n-novos" class="badge oculto"></span></button>
+      <button role="tab" data-aba="esgotados">Esgotados <span id="n-esgotados" class="badge cinza oculto"></span></button>
+    </nav>
+    <div class="direita">
+      <span id="relogio" class="relogio"></span>
+      <button id="som" class="btn fantasma-claro pequeno" aria-pressed="true">Som ligado</button>
+      <button id="sair" class="btn fantasma-claro pequeno icone" aria-label="Sair"><svg class="ic"><use href="/img/icones.svg#sair"/></svg></button>
+    </div>
+  </header>
+
+  <main>
+    <section id="aba-pedidos" class="aba">
+      <div class="quadro">
+        <div class="coluna" data-estado="novo"><h2>Novos <span class="contagem"></span></h2><ol></ol></div>
+        <div class="coluna" data-estado="a preparar"><h2>A preparar <span class="contagem"></span></h2><ol></ol></div>
+        <div class="coluna" data-estado="pronto"><h2>Prontos a servir <span class="contagem"></span></h2><ol></ol></div>
+      </div>
+    </section>
+    <section id="aba-esgotados" class="aba oculto">
+      <p class="mudo explica">Toca num prato quando acabar. Os clientes deixam de o poder pedir e amanhã volta a ficar disponível sozinho.</p>
+      <div id="pratos" class="pratos"></div>
+    </section>
+  </main>
+</div>
+
+<script type="module" src="/js/equipa.js"></script>
+</body>
+</html>

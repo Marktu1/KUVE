@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="pt" class="a-carregar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F5F5F1">
+<title>Menu</title>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/menu.css">
+<script type="module" src="/vendor/model-viewer.min.js"></script>
+</head>
+<body>
+<p id="aviso" class="aviso-topo oculto" role="note"></p>
+
+<header class="cab">
+  <div id="capa" class="capa" aria-hidden="true"></div>
+  <div class="cab-in">
+    <div class="cab-topo">
+      <img id="logo" class="logo oculto" alt="">
+      <span class="chips">
+        <span id="horario" class="chip-horario oculto"></span>
+        <span id="mesa" class="mesa oculto"></span>
+      </span>
+    </div>
+    <h1 id="nome">Menu</h1>
+    <p id="frase" class="frase"></p>
+    <p class="dica-3d"><svg class="ic"><use href="/img/icones.svg#cubo"/></svg> <span id="dica-3d-texto"></span></p>
+  </div>
+</header>
+
+<section id="destaques" class="destaques oculto" aria-labelledby="destaques-titulo">
+  <h2 id="destaques-titulo"></h2>
+  <div id="destaques-lista" class="destaques-lista"></div>
+</section>
+
+<nav id="categorias" class="categorias" aria-label="Categorias"></nav>
+
+<main id="lista" class="lista" aria-live="polite">
+  <div class="esqueleto" aria-hidden="true"><span></span><span></span><span></span></div>
+  <p class="sr">A carregar o menu…</p>
+</main>
+
+<footer class="rodape">
+  <p id="rodape-texto" class="rodape-texto oculto"></p>
+  <ul id="contactos" class="contactos oculto"></ul>
+  <span id="marca-menu3d" class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg> Menu 3D</span>
+</footer>
+
+<!-- Prato -->
+<div id="folha-prato" class="folha oculto" role="dialog" aria-modal="true" aria-labelledby="p-nome">
+  <div class="folha-corpo">
+    <span class="pega" aria-hidden="true"></span>
+    <button class="fechar" data-fechar aria-label="Voltar ao menu"><svg class="ic"><use href="/img/icones.svg#fechar"/></svg></button>
+    <div class="mesa-3d">
+      <div class="prato-palco">
+        <model-viewer id="mv" camera-controls touch-action="pan-y" shadow-intensity="1.15" shadow-softness="0.85"
+          environment-image="neutral" exposure="1.05" interaction-prompt="none" tone-mapping="aces"
+          ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed" ar-placement="floor"
+          camera-orbit="0deg 62deg auto" min-camera-orbit="auto 20deg auto" max-camera-orbit="auto 85deg auto">
+          <button slot="ar-button" class="btn-ar"><svg class="ic"><use href="/img/icones.svg#cubo"/></svg><span id="texto-ar">Ver na minha mesa</span></button>
+        </model-viewer>
+        <img id="p-foto-principal" class="prato-foto oculto" alt="">
+      </div>
+      <p id="p-escala" class="escala"></p>
+    </div>
+    <div class="info">
+      <div class="info-cab">
+        <div>
+          <p id="p-categoria" class="categoria-pequena"></p>
+          <h2 id="p-nome"></h2>
+        </div>
+        <strong id="p-preco" class="preco-grande"></strong>
+      </div>
+      <p id="p-desc" class="descricao"></p>
+      <dl id="p-detalhes" class="detalhes"></dl>
+      <div id="p-fotos" class="fotos-tira"></div>
+      <fieldset id="p-variantes" class="variantes oculto"><legend>Escolhe</legend></fieldset>
+      <div class="adicionar">
+        <div class="qtd" role="group" aria-label="Quantidade">
+          <button type="button" data-q="-1" aria-label="Menos um">−</button>
+          <output id="p-qtd">1</output>
+          <button type="button" data-q="1" aria-label="Mais um">+</button>
+        </div>
+        <button id="p-adicionar" class="btn acento grande">Adicionar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pedido -->
+<div id="folha-pedido" class="folha oculto" role="dialog" aria-modal="true" aria-labelledby="ped-titulo">
+  <div class="folha-corpo pedido-corpo">
+    <span class="pega" aria-hidden="true"></span>
+    <button class="fechar" data-fechar aria-label="Fechar o pedido"><svg class="ic"><use href="/img/icones.svg#fechar"/></svg></button>
+    <div>
+      <h2 id="ped-titulo">O teu pedido</h2>
+      <p id="ped-mesa" class="mudo"></p>
+    </div>
+    <ul id="ped-itens" class="ped-itens"></ul>
+    <p class="ped-total"><span>Total</span><strong id="ped-total"></strong></p>
+    <label class="campo"><span>O teu nome (opcional)</span><input id="ped-nome" type="text" maxlength="60" autocomplete="given-name"></label>
+    <label class="campo"><span>Nota para a cozinha (opcional)</span><input id="ped-nota" type="text" maxlength="300" placeholder="Sem picante, por favor"></label>
+    <button id="ped-enviar" class="btn acento grande">Enviar pedido</button>
+    <p id="ped-ajuda" class="mudo pequeno"></p>
+  </div>
+</div>
+
+<button id="barra-pedido" class="barra-pedido oculto">
+  <span id="barra-qtd"></span>
+  <span>Ver pedido</span>
+  <strong id="barra-total"></strong>
+</button>
+
+<script type="module" src="/js/menu.js"></script>
+</body>
+</html>
