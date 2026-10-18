@@ -1,0 +1,38 @@
+# Blueprint do Render para a Kuvê.
+# No Render: New → Blueprint → escolhe este repositório. Cria o serviço "kuve".
+#
+# Plano grátis (como está): o disco apaga-se quando o serviço adormece (15 min sem visitas)
+# ou volta a arrancar. Por isso KUVE_DEMO=1: arranca sempre com o restaurante de demonstração.
+# As chaves do estúdio e os PINs da equipa aparecem nos Logs a cada arranque; a chave da
+# plataforma está em Environment → PLATAFORMA_CHAVE e abre qualquer estúdio pelo painel.
+#
+# Piloto real (dados guardados): muda "plan" para um plano pago, apaga KUVE_DEMO
+# e descomenta o bloco "disk". DATA_DIR aponta para o disco.
+services:
+  - type: web
+    name: kuve
+    runtime: node
+    plan: free
+    region: frankfurt          # a região do Render mais perto de Luanda
+    buildCommand: npm ci --omit=dev --ignore-scripts
+    startCommand: node scripts/arranque.mjs
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: KUVE_DEMO
+        value: "1"
+      - key: PLATAFORMA_CHAVE
+        generateValue: true    # chave longa e aleatória; vê-a no painel do Render
+      - key: WORKER_TOKEN
+        generateValue: true    # só é preciso quando ligares o worker de IA
+      # PUBLIC_URL não é preciso: usa-se o endereço que o Render dá (RENDER_EXTERNAL_URL).
+      # Se ligares um domínio teu (ex.: menu.kuve.ao), define aqui PUBLIC_URL, porque vai dentro dos QR.
+      # - key: DATA_DIR
+      #   value: /data
+    # disk:
+    #   name: dados-kuve
+    #   mountPath: /data
+    #   sizeGB: 1

@@ -1,6 +1,6 @@
 {
   "name": "menu3d",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Kuvê · Menu 3D — menu digital com pratos em 3D e realidade aumentada",
   "main": "server/index.js",
   "scripts": {

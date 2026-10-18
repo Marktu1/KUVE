@@ -22,7 +22,9 @@ const server = spawn(process.execPath, [path.join(ROOT, 'server/index.js')], {
   env: { ...process.env, PORT: String(PORT), DATA_DIR, PLATAFORMA_CHAVE: PLAT, PUBLIC_URL: process.env.PUBLIC_URL || `http://localhost:${PORT}` },
   stdio: ['ignore', 'inherit', 'inherit'],
 });
-process.on('SIGINT', () => { server.kill(); process.exit(0); });
+for (const sinal of ['SIGINT', 'SIGTERM']) process.on(sinal, () => { server.kill(); process.exit(0); });
+// se o servidor cair, a demonstração cai com ele (o alojamento volta a arrancar tudo)
+server.on('exit', codigo => process.exit(codigo ?? 1));
 
 async function api(caminho, { method = 'GET', body, key, plat, equipa, form } = {}) {
   const headers = {};
@@ -46,7 +48,7 @@ for (let i = 0; i < 50; i++) {
 }
 
 if (ja) {
-  console.log(`\nDemonstração a correr com os dados guardados em ${DATA_DIR}\n  Painel da plataforma: ${B}/plataforma  (chave: ${PLAT})\n`);
+  console.log(`\nDemonstração a correr com os dados guardados em ${DATA_DIR}\n  Painel da plataforma: ${B}/plataforma  (chave: ${process.env.PLATAFORMA_CHAVE ? 'a de PLATAFORMA_CHAVE' : PLAT})\n`);
 } else {
   // ---------- restaurante ----------
   const { restaurante, adminKey: key } = await api('/api/plataforma/restaurantes', { method: 'POST', plat: PLAT, body: { name: 'Kianda Demonstração', plano: 'teste', tables: 0, whatsapp: '', contacto: 'Restaurante fictício' } });
@@ -115,13 +117,16 @@ if (ja) {
     aviso: { ativo: true, texto: 'Restaurante fictício para demonstração da Kuvê', ate: '' },
   } } });
 
+  const PUB = (process.env.PUBLIC_URL || `http://localhost:${PORT}`).replace(/\/$/, '');
+  // num alojamento a chave vem do ambiente: não a escrevemos nos logs
+  const CHAVE_VISIVEL = process.env.PLATAFORMA_CHAVE ? '(a de PLATAFORMA_CHAVE)' : PLAT;
   const linha = '─'.repeat(64);
   console.log(`\n${linha}\nDemonstração pronta (dados fictícios)\n${linha}
-  Menu do cliente (mesa 4):  ${B}/m/${restaurante.slug}?m=${codigo('4')}
-  Estúdio do gerente:        ${B}/estudio   código ${rid} · chave ${key}
-  Ecrã da equipa:            ${B}/equipa    código ${restaurante.slug} · PIN Joana ${joana.pin} · PIN Paulo ${paulo.pin}
-  Painel da plataforma:      ${B}/plataforma  chave ${PLAT}
-  Acompanhar um pedido:      ${B}${c.acompanhar}
+  Menu do cliente (mesa 4):  ${PUB}/m/${restaurante.slug}?m=${codigo('4')}
+  Estúdio do gerente:        ${PUB}/estudio   código ${rid} · chave ${key}
+  Ecrã da equipa:            ${PUB}/equipa    código ${restaurante.slug} · PIN Joana ${joana.pin} · PIN Paulo ${paulo.pin}
+  Painel da plataforma:      ${PUB}/plataforma  chave ${CHAVE_VISIVEL}
+  Acompanhar um pedido:      ${PUB}${c.acompanhar}
 ${linha}\nCtrl+C para parar. Os dados ficam em ${DATA_DIR}\n`);
   fs.writeFileSync(path.join(DATA_DIR, 'DEMO.txt'), JSON.stringify({ rid, key, slug: restaurante.slug, pinJoana: joana.pin, pinPaulo: paulo.pin, mesa4: codigo('4'), acompanhar: c.acompanhar, plat: PLAT }, null, 2));
 }

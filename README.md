@@ -163,6 +163,17 @@ A câmara e o AR **só funcionam em HTTPS**.
 3. **IA:** ver `ai-worker/README.md`.
 4. **Cópias de segurança:** guarda a pasta `DATA_DIR` com regularidade (db.json + uploads).
 
+### No Render (teste grátis em minutos)
+
+O repositório traz `render.yaml`. No Render: **New → Blueprint**, escolhe o repositório e confirma.
+
+- **Plano grátis:** o disco apaga-se quando o serviço adormece (15 min sem visitas) ou volta a arrancar, e acordar demora cerca de um minuto. Por isso o blueprint liga `KUVE_DEMO=1`: o servidor arranca sempre com o restaurante de demonstração completo (pratos, 3D, mesas, equipa, pedidos).
+- **Onde estão as chaves:** a chave da plataforma está em *Environment → PLATAFORMA_CHAVE* (gerada pelo Render). As chaves do estúdio e os PINs da equipa mudam a cada arranque e aparecem nos *Logs*. Pelo painel `/plataforma` abres o estúdio de qualquer restaurante sem chave.
+- **Endereço:** `PUBLIC_URL` é preenchido sozinho com o endereço do Render (`RENDER_EXTERNAL_URL`). Com um domínio teu, define-o à mão antes de imprimir QR.
+- **Piloto real:** plano pago, apaga `KUVE_DEMO` e descomenta o disco e o `DATA_DIR` no `render.yaml`.
+
+Para testar o arranque como no Render: `KUVE_DEMO=1 node scripts/arranque.mjs`.
+
 ## Testado
 
 Testes automáticos num Chromium sem ecrã, com WebGL por software:
@@ -177,7 +188,7 @@ Testes automáticos num Chromium sem ecrã, com WebGL por software:
 - Permissões: a equipa recebe 401 no painel, na lista da equipa e ao editar pratos ou o restaurante; pedido com prato esgotado recusado; 9.º PIN errado bloqueado (429); membro desativado perde a sessão.
 - API: chave errada recusada (401), tipos de ficheiro recusados, preços falsificados ignorados.
 
-- `npm test` (14 testes, servidor real com base de dados temporária): transições de estado, migração de dados antigos, isolamento entre restaurantes (gerente e equipa), preço do servidor, envio repetido, acompanhamento só com o link secreto, mesas e QR, pagamentos e painel, permissões por pessoa, planos e limites, erros sem detalhes internos.
+- `npm test` (20 testes, incluindo a guarda da marca Kuvê; servidor real com base de dados temporária): transições de estado, migração de dados antigos, isolamento entre restaurantes (gerente e equipa), preço do servidor, envio repetido, acompanhamento só com o link secreto, mesas e QR, pagamentos e painel, permissões por pessoa, planos e limites, erros sem detalhes internos.
 - No browser (Chromium, telemóvel e tablet simulados): pesquisa no menu, mesa vinda do QR, duplo toque a enviar sem duplicar, página de acompanhamento; ecrã da equipa com receção (tudo) e cozinha (sem pagamentos nem cancelar); estúdio com pedidos, pagamentos, anular pagamento, mesas, permissões e plano; restaurante no plano Menu sem pedidos nem painel; editor de planos.
 
 **Ainda por testar em aparelhos reais:**

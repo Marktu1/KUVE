@@ -1,5 +1,11 @@
 # Alterações
 
+## 0.2.1 · Deploy no Render (18 out 2026)
+
+- `render.yaml`: blueprint pronto para o Render, plano grátis, região Frankfurt, chaves geradas pelo Render.
+- `scripts/arranque.mjs`: arranque para alojamento. Com `KUVE_DEMO=1` começa sempre com o restaurante de demonstração; sem ele é o servidor normal. Usa `RENDER_EXTERNAL_URL` quando falta `PUBLIC_URL`.
+- `scripts/demo.mjs`: para limpo com `SIGTERM` (o sinal do Render), cai se o servidor cair, mostra os links com o endereço público e não escreve a chave da plataforma nos logs quando vem do ambiente.
+
 ## 0.2.0 · Marca Kuvê (18 out 2026)
 
 Identidade nova em toda a ferramenta. O servidor, a API, a base de dados e os fluxos ficam como estavam; mudaram só textos de erro onde aparecia o nome da marca.
