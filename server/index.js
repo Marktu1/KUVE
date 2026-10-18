@@ -1191,6 +1191,7 @@ app.use('/uploads', express.static(UPLOAD_DIR, {
   },
 }));
 app.get('/m/:slug', (req, res) => res.sendFile(path.join(WEB, 'menu.html')));
+app.get('/m/:slug/pedido/:orderId', (req, res) => res.sendFile(path.join(WEB, 'pedido.html')));
 app.get('/p/:slug', (req, res) => res.sendFile(path.join(WEB, 'print.html')));
 app.get('/estudio', (req, res) => res.sendFile(path.join(WEB, 'studio.html')));
 app.get('/plataforma', (req, res) => res.sendFile(path.join(WEB, 'plataforma.html')));

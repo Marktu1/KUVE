@@ -1,0 +1,40 @@
+/* Acompanhar o pedido — usa as cores e letras do restaurante */
+.a-carregar body { opacity: 0; }
+body { transition: opacity .25s; }
+.acomp { max-width: 560px; margin: 0 auto; padding: calc(20px + env(safe-area-inset-top)) 18px 40px; display: grid; gap: 14px; }
+.acomp-cab { display: flex; align-items: center; gap: 12px; padding: 4px 2px 6px; }
+.logo { width: 44px; height: 44px; border-radius: 50%; object-fit: contain; background: var(--branco); box-shadow: var(--sombra-1); }
+.rest-nome { font: 700 1.125rem var(--f-titulo); }
+.cartao-pedido { padding: 20px; border-radius: var(--r-l); background: var(--branco); border: 1px solid var(--linha); display: grid; gap: 10px; }
+.numero { display: flex; gap: 8px; align-items: center; color: var(--musgo); font-weight: 600; font-size: .9375rem; }
+.mesa-tag { padding: 3px 10px; border-radius: 999px; background: var(--mesa); color: var(--tinta-2); font-size: .8125rem; }
+.cartao-pedido h1 { font-size: clamp(2rem, 9vw, 2.6rem); font-weight: 800; letter-spacing: -0.03em; }
+.cartao-pedido h2 { font-size: 1.125rem; }
+.frase-estado { color: var(--musgo); }
+.passos { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 0; }
+.passos li { position: relative; display: grid; grid-template-columns: 28px 1fr auto; gap: 12px; align-items: center; padding: 9px 0; color: var(--nevoa); }
+.passos li::before { content: ""; position: absolute; left: 13px; top: -9px; height: 18px; width: 2px; background: var(--linha); }
+.passos li:first-child::before { display: none; }
+.passos .bola { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--linha-forte); background: var(--branco); }
+.passos .bola svg { width: 16px; height: 16px; stroke-width: 2.4; opacity: 0; }
+.passos li.feito { color: var(--tinta); }
+.passos li.feito .bola { background: var(--acento); border-color: var(--acento); color: var(--acento-texto, #fff); }
+.passos li.feito .bola svg { opacity: 1; }
+.passos li.feito::before { background: var(--acento); }
+.passos li.agora { color: var(--tinta); font-weight: 700; }
+.passos li.agora .bola { border-color: var(--acento); box-shadow: 0 0 0 5px color-mix(in srgb, var(--acento) 18%, transparent); animation: respirar 1.8s ease-in-out infinite; }
+@keyframes respirar { 50% { box-shadow: 0 0 0 9px color-mix(in srgb, var(--acento) 6%, transparent); } }
+.passos time { font-size: .8125rem; font-variant-numeric: tabular-nums; color: var(--musgo); font-weight: 500; }
+.cancelado h1 { color: var(--erro); }
+.itens { list-style: none; margin: 0; padding: 0; }
+.itens li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--linha); }
+.itens li:first-child { border-top: 0; }
+.itens b { font-variant-numeric: tabular-nums; margin-right: 6px; }
+.linha-total { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--linha-forte); }
+.linha-total strong { font: 700 1.25rem var(--f-titulo); font-variant-numeric: tabular-nums; }
+.pago { font-size: .875rem; font-weight: 600; color: var(--musgo); }
+.pago.sim { color: #2F7A4F; }
+.largo { width: 100%; text-decoration: none; }
+.btn.grande { min-height: 52px; }
+.centro { text-align: center; }
+.pequeno { font-size: .8125rem; }

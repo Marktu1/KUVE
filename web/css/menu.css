@@ -261,3 +261,24 @@ body { padding-bottom: 110px; transition: opacity .25s ease-out; }
 [data-logo-nome="true"] .cab-topo .logo { display: none; }
 [data-logo-nome="true"][data-logo-fundo="true"] .logo-titulo { padding: 10px 14px; border-radius: var(--r-m); background: var(--branco); box-shadow: var(--sombra-1); }
 [data-logo-nome="true"][data-cabecalho="capa"] .cab-topo { margin-bottom: 110px; }
+
+/* Pesquisa */
+.procurar-bloco { max-width: 720px; margin: 0 auto; padding: 14px 20px 0; }
+.procurar { display: flex; align-items: center; gap: 10px; padding: 0 14px; min-height: 46px; border-radius: var(--r-botao, 999px); background: var(--branco); border: 1px solid var(--linha); color: var(--nevoa); }
+.procurar:focus-within { border-color: var(--tinta); }
+.procurar input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; min-height: 44px; padding: 0; color: var(--tinta); font-size: 1rem; }
+.procurar input:focus { box-shadow: none; }
+.vazio-menu { padding: 40px 0; text-align: center; }
+
+/* O meu pedido */
+.meu-pedido { position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 14;
+  width: min(calc(100% - 28px), 560px); min-height: 52px; padding: 0 18px; display: grid; grid-template-columns: auto 1fr auto auto; gap: 10px; align-items: center;
+  border-radius: var(--r-botao, 999px); background: var(--branco); color: var(--tinta); border: 1px solid var(--linha-forte); box-shadow: var(--sombra-2); text-decoration: none; font-size: .9375rem; }
+.meu-pedido.acima { bottom: calc(84px + env(safe-area-inset-bottom)); }
+.meu-pedido strong { font-weight: 700; }
+.seta-mini { font-size: 1.4rem; color: var(--nevoa); line-height: 1; }
+.ponto-estado { width: 10px; height: 10px; border-radius: 50%; background: var(--dende); }
+.ponto-estado.e-pronto, .ponto-estado.e-entregue { background: #2FA36B; }
+.ponto-estado.e-cancelado { background: #D2433A; }
+.ponto-estado.e-em_preparacao { animation: pulsar-estado 1.6s ease-in-out infinite; }
+@keyframes pulsar-estado { 50% { opacity: .35; } }

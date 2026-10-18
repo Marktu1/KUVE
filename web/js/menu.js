@@ -6,7 +6,12 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const slug = location.pathname.split('/').filter(Boolean)[1] || new URLSearchParams(location.search).get('r');
 const params = new URLSearchParams(location.search);
-const mesa = (params.get('mesa') || '').slice(0, 10);
+const codigoMesa = (params.get('m') || '').slice(0, 20);
+let mesa = codigoMesa ? '' : (params.get('mesa') || '').slice(0, 10);   // o código do QR vale mais do que o número no link
+const CHAVE_ENVIO = `menu3d.envio.${slug}`;
+const MEUS_PEDIDOS = `menu3d.pedidos.${slug}`;
+let filtro = '';
+const normalizar = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 const CHAVE_CARRINHO = `menu3d.carrinho.${slug}`;
 // pré-visualização dentro do painel da plataforma: o tema chega por postMessage e nada conta nas estatísticas
 const previa = params.has('previa') && window.parent !== window;
@@ -21,7 +26,10 @@ const guardarCarrinho = () => { try { localStorage.setItem(CHAVE_CARRINHO, JSON.
 
 async function iniciar() {
   try {
-    ({ restaurant: rest, dishes: pratos } = await api(`/api/menu/${encodeURIComponent(slug)}`));
+    let m;
+    ({ restaurant: rest, dishes: pratos, mesa: m } = await api(`/api/menu/${encodeURIComponent(slug)}${codigoMesa ? `?m=${encodeURIComponent(codigoMesa)}` : ''}`));
+    if (m) mesa = m.nome;
+    if (codigoMesa && !m) toast('Este QR já não corresponde a uma mesa. Pede ajuda à equipa.', 5000);
   } catch (err) {
     $('#lista').innerHTML = `<p class="aviso erro">Não foi possível abrir este menu: ${esc(err.message)}</p>`;
     return;
@@ -36,6 +44,29 @@ async function iniciar() {
   if (aberto) abrirPrato(aberto, false);
   setInterval(pintarHorario, 60_000);
   if (previa) parent.postMessage({ tipo: 'menu-pronto' }, location.origin);
+  acompanharMeuPedido();
+}
+
+const fazPedidos = () => (rest.funcionalidades || []).includes('pedidos');
+
+// ---------- o meu pedido (acompanhar sem conta) ----------
+function meusPedidos() {
+  try { return JSON.parse(localStorage.getItem(MEUS_PEDIDOS) || '[]').filter(p => Date.now() - p.em < 12 * 3600e3); } catch { return []; }
+}
+let temporizadorPedido = null;
+async function acompanharMeuPedido() {
+  clearTimeout(temporizadorPedido);
+  const ultimo = meusPedidos().at(-1);
+  const el = $('#meu-pedido');
+  if (!ultimo || previa) { el.classList.add('oculto'); return; }
+  el.href = ultimo.url;
+  try {
+    const u = new URL(ultimo.url, location.origin);
+    const { order } = await api(`/api/pedido/${u.pathname.split('/')[4]}?t=${u.searchParams.get('t')}`);
+    el.innerHTML = `<span class="ponto-estado e-${order.status}"></span><span>Pedido #${order.number}</span><strong>${esc(order.rotulo)}</strong><span class="seta-mini">›</span>`;
+    el.classList.remove('oculto');
+    if (!['entregue', 'cancelado'].includes(order.status)) temporizadorPedido = setTimeout(acompanharMeuPedido, 15000);
+  } catch { el.classList.add('oculto'); }
 }
 
 // ---------- identidade do restaurante ----------
@@ -141,12 +172,19 @@ function pintarDestaques(titulo) {
 }
 
 function pintarMenu() {
-  const ordem = [...rest.categories, ...new Set(pratos.map(p => p.category))].filter((c, i, a) => c && a.indexOf(c) === i);
-  const grupos = ordem.map(c => [c, pratos.filter(p => p.category === c)]).filter(([, l]) => l.length);
-  const semCat = pratos.filter(p => !p.category);
+  const q = normalizar(filtro.trim());
+  const visiveis = q ? pratos.filter(p => normalizar(`${p.name} ${p.description} ${p.ingredients} ${p.category}`).includes(q)) : pratos;
+  const ordem = [...rest.categories, ...new Set(visiveis.map(p => p.category))].filter((c, i, a) => c && a.indexOf(c) === i);
+  const grupos = ordem.map(c => [c, visiveis.filter(p => p.category === c)]).filter(([, l]) => l.length);
+  const semCat = visiveis.filter(p => !p.category);
   if (semCat.length) grupos.push(['Outros', semCat]);
+  $('#procurar-bloco').classList.toggle('oculto', pratos.length < 8);
 
-  if (!grupos.length) { $('#lista').innerHTML = '<p class="mudo" style="padding:40px 0;text-align:center">Este menu ainda não tem pratos.</p>'; return; }
+  if (!grupos.length) {
+    $('#categorias').innerHTML = '';
+    $('#lista').innerHTML = `<p class="mudo vazio-menu">${q ? `Nada encontrado para "${esc(filtro.trim())}".` : 'Este menu ainda não tem pratos.'}</p>`;
+    return;
+  }
   $('.dica-3d').classList.toggle('oculto', !pratos.some(p => p.modelUrl));
 
   $('#categorias').innerHTML = grupos.map(([c], i) => `<a href="#cat-${i}" aria-current="${i === 0}">${esc(c)}</a>`).join('');
@@ -258,6 +296,7 @@ function varianteEscolhida() {
 
 function atualizarBotao() {
   const { preco } = varianteEscolhida();
+  $('.adicionar').classList.toggle('oculto', !fazPedidos());
   const b = $('#p-adicionar');
   const tx = tema.textos.adicionar || 'Adicionar';
   b.disabled = Boolean(pratoAberto.esgotado || fechado);
@@ -302,7 +341,8 @@ const total = () => carrinho.reduce((s, l) => s + linhaPreco(l).subtotal, 0);
 
 function pintarBarra() {
   const n = carrinho.reduce((s, l) => s + l.qty, 0);
-  $('#barra-pedido').classList.toggle('oculto', !n);
+  $('#barra-pedido').classList.toggle('oculto', !n || (rest && !fazPedidos()));
+  $('#meu-pedido').classList.toggle('acima', Boolean(n));
   $('#barra-qtd').textContent = n;
   if (rest) $('#barra-total').textContent = moeda(total());
 }
@@ -340,17 +380,23 @@ function pintarPedido() {
 $('#ped-enviar').addEventListener('click', async () => {
   const btn = $('#ped-enviar');
   btn.disabled = true;
+  // a mesma chave em cada repetição: se a rede falhar e o cliente tocar outra vez, não sai um pedido duplicado
+  let chave = sessionStorage.getItem(CHAVE_ENVIO);
+  if (!chave) { chave = crypto.randomUUID?.() || String(Date.now()) + Math.random(); sessionStorage.setItem(CHAVE_ENVIO, chave); }
   try {
     const r = await api(`/api/menu/${encodeURIComponent(slug)}/orders`, {
       method: 'POST',
-      body: { table: mesa, customerName: $('#ped-nome').value, note: $('#ped-nota').value, items: carrinho },
+      body: { chave, mesaCodigo: codigoMesa || undefined, table: codigoMesa ? undefined : mesa, customerName: $('#ped-nome').value, note: $('#ped-nota').value, items: carrinho },
     });
+    sessionStorage.removeItem(CHAVE_ENVIO);
+    try { localStorage.setItem(MEUS_PEDIDOS, JSON.stringify([...meusPedidos(), { url: r.acompanhar, number: r.order.number, em: Date.now() }].slice(-5))); } catch {}
     carrinho = [];
     guardarCarrinho();
     pintarBarra();
     fecharFolhas(true);
     toast(`Pedido #${r.order.number} enviado`, 4000);
-    if (r.whatsappUrl) setTimeout(() => { location.href = r.whatsappUrl; }, 700);
+    acompanharMeuPedido();
+    if (r.whatsappUrl) setTimeout(() => { location.href = r.whatsappUrl; }, 900);
   } catch (err) { toast(err.message); }
   btn.disabled = false;
 });
@@ -377,6 +423,9 @@ window.addEventListener('popstate', () => {
   empurrou = false;
   if (id) abrirPrato(id, false); else fecharFolhas(false);
 });
+
+// pesquisa
+$('#procurar').addEventListener('input', e => { filtro = e.target.value; pintarMenu(); });
 
 // pré-visualização ao vivo a partir do editor de identidade
 if (previa) {

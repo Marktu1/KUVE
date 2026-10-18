@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt" class="a-carregar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F5F5F1">
+<meta name="robots" content="noindex">
+<title>O teu pedido</title>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/pedido.css">
+</head>
+<body>
+<main class="acomp">
+  <header class="acomp-cab">
+    <img id="logo" class="logo oculto" alt="">
+    <span id="rest-nome" class="rest-nome"></span>
+  </header>
+
+  <section id="cartao" class="cartao-pedido" aria-live="polite">
+    <p id="erro" class="aviso erro oculto"></p>
+    <p class="numero"><span id="numero"></span><span id="mesa" class="mesa-tag oculto"></span></p>
+    <h1 id="estado">A carregar…</h1>
+    <p id="frase" class="frase-estado"></p>
+    <ol id="passos" class="passos"></ol>
+  </section>
+
+  <section class="cartao-pedido">
+    <h2>O que pediste</h2>
+    <ul id="itens" class="itens"></ul>
+    <p class="linha-total"><span>Total</span><strong id="total"></strong></p>
+    <p id="pago" class="pago"></p>
+  </section>
+
+  <a id="voltar" class="btn secundario grande largo">Voltar ao menu</a>
+  <p class="mudo pequeno centro">Esta página atualiza sozinha. Guarda o link para voltar a ela.</p>
+</main>
+<script type="module" src="/js/pedido.js"></script>
+</body>
+</html>
