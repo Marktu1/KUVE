@@ -73,3 +73,27 @@ Nada foi reconstruído do zero: a stack atual serve o MVP.
 5. Permissões por membro da equipa.
 6. Pesquisa no menu.
 7. `npm test` com testes de isolamento e dos fluxos críticos; `npm run demo` com dados fictícios.
+
+
+## Estado depois da implementação (18 out 2026)
+
+Tudo o que estava no plano acima foi feito, no servidor **e** nas interfaces:
+
+| Requisito do prompt | Estado | Onde |
+| --- | --- | --- |
+| Menu público por link/QR, sem conta | ✅ | `/m/<restaurante>` |
+| Pesquisa no menu | ✅ | aparece com 8+ pratos |
+| 3D/AR real com alternativa em foto | ✅ (já existia) | model-viewer |
+| Pedido sem duplicados, preço do servidor | ✅ | chave por envio; teste 5 e 6 |
+| Acompanhar o pedido | ✅ | `/m/<restaurante>/pedido/<id>?t=…` |
+| Estados explícitos e transições válidas | ✅ | `server/dominio.js`; teste 7 |
+| Mesas com QR seguro, estado, libertar | ✅ | estúdio → Mesas e QR; equipa → Mesas |
+| Pagamentos registados, painel separa valor pedido de pago | ✅ | equipa, estúdio, painel |
+| Permissões por pessoa | ✅ | estúdio → Equipa |
+| Planos com preço, limites e funcionalidades | ✅ | plataforma → Planos; teste 13 |
+| Gerente vê plano e uso | ✅ | estúdio → Restaurante |
+| Isolamento entre restaurantes testado | ✅ | testes 3 e 4 |
+| `npm test` e `npm run demo` | ✅ | `test/`, `scripts/demo.mjs` |
+| Faturação fiscal certificada | ❌ fora do âmbito | ver acima |
+
+Por validar no terreno: AR em telemóveis reais com HTTPS, tablets de restaurante com rede instável, preços dos planos com restaurantes-piloto.

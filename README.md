@@ -67,7 +67,24 @@ As alterações ficam num **rascunho** que se guarda sozinho e que os clientes n
 | --- | --- | --- | --- |
 | Dono da plataforma | `/plataforma` | chave da plataforma | todos os restaurantes, pagamentos, IA |
 | Gerente do restaurante | `/estudio` | código + chave do estúdio | painel de vendas, menu, preços, AR, equipa |
-| Equipa (receção, mesa, cozinha) | `/equipa` | código + PIN de 6 dígitos | só o quadro de pedidos e os pratos esgotados |
+| Equipa (receção, mesa, cozinha) | `/equipa` | código + PIN de 6 dígitos | só o que o gerente marcar: pedidos, cancelar, pagamentos, mesas, esgotados |
+| Cliente | `/m/<restaurante>` (QR da mesa) | sem conta | menu, 3D/AR, pedido e acompanhamento por link secreto |
+
+### Pedidos, mesas e pagamentos
+
+- **Estados:** recebido → confirmado (opcional) → em preparação → pronto → entregue, ou cancelado. O servidor só aceita estas transições (não se volta atrás depois de entregue; um pedido pago não se cancela sem anular o pagamento).
+- **Sem duplicados:** cada envio leva uma chave; se a rede falhar e o cliente tocar outra vez, devolve-se o mesmo pedido.
+- **Acompanhar:** depois de enviar, o cliente vê o estado no menu e numa página própria (`/m/<restaurante>/pedido/<id>?t=<segredo>`), sem conta. Sem o segredo, o pedido não aparece.
+- **Mesas:** o gerente cria mesas com nome (ex.: "12", "Esplanada A"). Cada QR leva um código secreto da mesa: o pedido chega identificado e não dá para pedir para outra mesa mudando o link. Estado: livre, pedido por confirmar, ocupada. "Libertar" fecha o serviço da mesa. "Novo QR" invalida o QR antigo.
+- **Pagamentos:** registo manual de quem pagou e como (dinheiro, Multicaixa Express, TPA, transferência). Só o gerente anula um pagamento. **Não é faturação fiscal certificada (AGT)**: é o controlo interno do restaurante.
+- **Painel:** separa *valor pedido* (soma dos pedidos não cancelados) de *pagamentos confirmados*, com o que falta pagar e o total por método.
+
+### Planos (painel `/plataforma` → Planos)
+
+- Cada plano tem preço mensal, limites (pratos, pratos com 3D, mesas, pessoas na equipa) e funcionalidades (pedidos, mesas, equipa, pagamentos, painel, menu impresso em AR, IA foto→3D, identidade personalizada).
+- Os planos ficam na base de dados e editam-se no painel; não há preços no código. Os valores de partida (Menu 15 000 Kz, Profissional 35 000 Kz, Premium 65 000 Kz) são exemplos a validar com os restaurantes-piloto.
+- O servidor aplica os limites e as funcionalidades (erro claro, sem detalhes internos). O gerente vê o seu plano, o uso e o que está incluído no separador Restaurante.
+- O Menu 3D não cobra nada automaticamente: o pagamento da mensalidade regista-se em "Pago até" na gaveta do restaurante.
 
 ### Painel do gerente (`/estudio`, separador Painel)
 
@@ -82,7 +99,8 @@ As alterações ficam num **rascunho** que se guarda sozinho e que os clientes n
 ### Equipa e ecrã do balcão (`/equipa`)
 
 - O gerente cria cada pessoa com nome e função. O PIN aparece uma única vez. Pode gerar um PIN novo, desativar (termina a sessão em todos os aparelhos) ou remover.
-- O ecrã da equipa é feito para tablet: colunas Novos / A preparar / Prontos a servir, tempo de espera (vermelho a partir de 15 min), som quando chega um pedido e registo de quem mexeu em cada pedido.
+- O ecrã da equipa é feito para tablet: colunas Novos / Em preparação / Prontos a servir / Entregues por pagar, tempo de espera (vermelho a partir de 15 min), som quando chega um pedido, registo de quem mexeu em cada pedido, registo de pagamentos e separador Mesas.
+- O gerente escolhe, pessoa a pessoa, o que cada uma pode fazer (pedidos, cancelar, pagamentos, mesas, esgotados). O servidor verifica sempre.
 - **Esgotado hoje:** a equipa ou o gerente marcam um prato que acabou. O cliente deixa de o poder pedir (o servidor também recusa) e no dia seguinte volta a ficar disponível sozinho.
 - A equipa não vê faturação, preços de custo, estatísticas nem pode editar o menu: essas rotas devolvem 401 com um token de equipa.
 - Proteção do PIN: no máximo 8 tentativas em 10 minutos por aparelho e restaurante; os PINs e as sessões são guardados só como hash.
@@ -103,12 +121,16 @@ O worker **vai buscar** os trabalhos ao servidor. Pode, por isso, correr numa GP
 
 ## Correr localmente
 
-Precisa de Node 20 ou mais recente.
+Precisa de Node 22 ou mais recente.
 
 ```bash
 npm install
 npm start                     # http://localhost:3000/estudio
+npm test                      # testes dos fluxos críticos e do isolamento entre restaurantes
+npm run demo                  # restaurante fictício completo em ./data-demo (não toca em ./data)
 ```
+
+`npm run demo` mostra no fim os links e as chaves do estúdio, os PINs da equipa e a chave da plataforma (`demo-plataforma`). Todos os dados (restaurante, pratos, ilustrações, pedidos) são fictícios.
 
 `web/vendor/` já vem construído (incluindo as letras em `web/vendor/letras`). Só é preciso `npm run build` se atualizares as bibliotecas. Para incluir o MindAR no build, instala-o antes com `npm i mind-ar@1.2.5 --no-save --ignore-scripts`.
 
@@ -145,6 +167,9 @@ Testes automáticos num Chromium sem ecrã, com WebGL por software:
 - Permissões: a equipa recebe 401 no painel, na lista da equipa e ao editar pratos ou o restaurante; pedido com prato esgotado recusado; 9.º PIN errado bloqueado (429); membro desativado perde a sessão.
 - API: chave errada recusada (401), tipos de ficheiro recusados, preços falsificados ignorados.
 
+- `npm test` (14 testes, servidor real com base de dados temporária): transições de estado, migração de dados antigos, isolamento entre restaurantes (gerente e equipa), preço do servidor, envio repetido, acompanhamento só com o link secreto, mesas e QR, pagamentos e painel, permissões por pessoa, planos e limites, erros sem detalhes internos.
+- No browser (Chromium, telemóvel e tablet simulados): pesquisa no menu, mesa vinda do QR, duplo toque a enviar sem duplicar, página de acompanhamento; ecrã da equipa com receção (tudo) e cozinha (sem pagamentos nem cancelar); estúdio com pedidos, pagamentos, anular pagamento, mesas, permissões e plano; restaurante no plano Menu sem pedidos nem painel; editor de planos.
+
 **Ainda por testar em aparelhos reais:**
 
 - Abrir o AR nativo (Scene Viewer e Quick Look) num Android e num iPhone.
@@ -156,7 +181,10 @@ Testes automáticos num Chromium sem ecrã, com WebGL por software:
 - Base de dados em ficheiro JSON: chega para dezenas de restaurantes. Para escalar, troca `server/store.js` por Postgres mantendo a mesma interface.
 - O gerente entra com uma chave por restaurante (não há várias contas de gerente nem recuperação por e-mail).
 - O ecrã da equipa atualiza de 4 em 4 segundos (sem notificações push).
-- Não há pagamentos online; o pedido segue para a cozinha e para o WhatsApp.
+- Não há pagamentos online nem faturação fiscal certificada; o pagamento regista-se à mão.
+- O cliente acompanha o pedido por atualização periódica (10–15 s), sem notificações push.
+- Um só processo de servidor (JSON). Para várias instâncias, passar a Postgres.
+- Módulos futuros, de propósito fora do MVP: stock, fichas técnicas, fornecedores, caixa, filiais, entregas, pagamentos locais integrados.
 - O USDZ gerado na hora para o iPhone não leva animações. Para pratos animados no iPhone, carrega um `.usdz` próprio no campo `iosModelUrl`.
 
 ## Licenças das peças usadas
