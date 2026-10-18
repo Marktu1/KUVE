@@ -5,7 +5,7 @@
 .id-barra { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding: 10px 16px; background: var(--tinta); color: var(--porcelana); }
 .id-titulo { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .id-titulo strong { display: block; font: 700 1.0625rem var(--f-titulo); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.id-titulo small { display: flex; align-items: center; gap: 6px; font-size: .8125rem; color: rgba(245,245,241,.65); }
+.id-titulo small { display: flex; align-items: center; gap: 6px; font-size: .8125rem; color: rgba(var(--porcelana-rgb),.65); }
 .id-titulo small::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
 .id-titulo small.rascunho::before { background: var(--dende); }
 .id-acoes { display: flex; gap: 8px; align-items: center; }
@@ -66,9 +66,9 @@
 .contraste { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .contraste li { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: .8125rem; }
 .contraste .nota { padding: 2px 9px; border-radius: 999px; font-weight: 700; font-size: .75rem; font-variant-numeric: tabular-nums; }
-.contraste .nota.bom { background: #E8F3EC; color: #1F5A39; }
-.contraste .nota.medio { background: #FFF3DA; color: var(--dende-escuro); }
-.contraste .nota.mau { background: #FDEEEC; color: var(--erro); }
+.contraste .nota.bom { background: var(--ok-fundo); color: var(--ok-texto); }
+.contraste .nota.medio { background: var(--aviso-fundo); color: var(--dende-escuro); }
+.contraste .nota.mau { background: var(--erro-fundo); color: var(--erro); }
 .paletas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .paletas:empty { display: none; }
 .paleta { display: grid; gap: 6px; padding: 8px; border: 1px solid var(--linha); border-radius: var(--r-m); background: var(--branco); font-size: .75rem; font-weight: 600; color: var(--musgo); text-align: left; }
@@ -142,7 +142,7 @@
 
 /* Palco com o telemóvel */
 .id-palco { position: relative; display: grid; grid-template-rows: auto 1fr; min-height: 0; background:
-  radial-gradient(circle at 1px 1px, rgba(24,32,29,.09) 1px, transparent 0) 0 0 / 22px 22px, var(--mesa); }
+  radial-gradient(circle at 1px 1px, rgba(var(--tinta-rgb),.09) 1px, transparent 0) 0 0 / 22px 22px, var(--mesa); }
 .id-palco-barra { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 18px 0; }
 .id-moldura { position: relative; min-height: 0; display: grid; place-items: center; overflow: hidden; }
 .telemovel { position: absolute; left: 50%; top: 50%; width: 390px; height: 844px; padding: 0; border-radius: 52px; background: #0C0D0C; box-shadow: 0 0 0 10px #0C0D0C, 0 0 0 11px #3A3D3B, 0 40px 80px -30px rgba(0,0,0,.55); transform-origin: center; overflow: hidden; }
@@ -152,8 +152,8 @@
 /* tabela: amostra do tema ao lado do nome */
 .amostra-tema { display: inline-flex; margin-left: 8px; vertical-align: middle; border-radius: 999px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
 .amostra-tema span { width: 10px; height: 14px; }
-.btn.fantasma-claro { background: transparent; border-color: rgba(245,245,241,.2); color: var(--porcelana); }
-.btn.fantasma-claro:hover { background: rgba(245,245,241,.08) !important; }
+.btn.fantasma-claro { background: transparent; border-color: rgba(var(--porcelana-rgb),.2); color: var(--porcelana); }
+.btn.fantasma-claro:hover { background: rgba(var(--porcelana-rgb),.08) !important; }
 .rotulo-escolha { font-size: .8125rem; font-weight: 600; color: var(--tinta-2); margin-bottom: -4px; }
 .id-bloco-cab > span { font-size: .875rem; font-weight: 500; }
 .escolha .logo-amostra { height: 46px; background-position: center; background-size: contain; background-repeat: no-repeat; background-origin: content-box; padding: 4px; box-shadow: inset 0 0 0 1px var(--linha); }

@@ -1,4 +1,4 @@
-// Regras de negócio do Menu 3D num só sítio: estados dos pedidos, pagamentos, permissões, planos.
+// Regras de negócio da Kuvê num só sítio: estados dos pedidos, pagamentos, permissões, planos.
 // O servidor (index.js) usa estas regras; os testes (test/) verificam-nas.
 
 // ---------- pedidos ----------

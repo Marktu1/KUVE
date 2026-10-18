@@ -149,8 +149,8 @@ function linha(el, titulo, serie, campo, formato) {
 
 // ---------- mapa de calor: dia da semana × hora (uma só cor, claro → escuro) ----------
 function cor(t) {
-  // #F6E6C2 → #E3A532 → #6B4A00
-  const a = [[246, 230, 194], [227, 165, 50], [107, 74, 0]];
+  // laranja Kuvê, claro → escuro: #FDE2D2 → #F26B2A → #7A2E0C
+  const a = [[253, 226, 210], [242, 107, 42], [122, 46, 12]];
   const [p, q, k] = t < 0.5 ? [a[0], a[1], t * 2] : [a[1], a[2], (t - 0.5) * 2];
   return `rgb(${p.map((v, i) => Math.round(v + (q[i] - v) * k)).join(',')})`;
 }

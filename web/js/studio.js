@@ -73,7 +73,7 @@ async function abrir() {
   const plataforma = sess.key.startsWith('plat:');
   aviso.className = `aviso-conta${rest.estado === 'suspenso' ? ' suspenso' : ''}`;
   aviso.innerHTML = rest.estado === 'suspenso'
-    ? `<span>Este menu está suspenso: os clientes não o conseguem abrir.${plataforma ? '' : ' Fala com a equipa Menu 3D para o reativar.'}</span>${plataforma ? '<a href="/plataforma">Voltar à plataforma</a>' : ''}`
+    ? `<span>Este menu está suspenso: os clientes não o conseguem abrir.${plataforma ? '' : ' Fala com a equipa Kuvê para o reativar.'}</span>${plataforma ? '<a href="/plataforma">Voltar à plataforma</a>' : ''}`
     : plataforma ? `<span>Estás a gerir este restaurante como dono da plataforma.</span><a href="/plataforma">Voltar à plataforma</a>` : '';
   aviso.classList.toggle('oculto', !aviso.innerHTML);
   if (pratos.length) editar(pratos[0]); else mostrarVazio();
@@ -103,7 +103,7 @@ function pintarPlano(p) {
       return `<div><span>${nome}</span><b>${uso}${max ? ` de ${max}` : ''}</b><i class="barra-uso${max && uso / max >= 0.9 ? ' cheia' : ''}"><i style="width:${max ? Math.min(100, (uso / max) * 100) : 0}%"></i></i>${max ? '' : '<small>não incluído</small>'}</div>`;
     }).join('')}</div>
     <ul class="plano-func">${Object.entries(NOMES_FUNC).map(([f, nome]) => `<li class="${p.funcionalidades.includes(f) ? 'sim' : 'nao'}">${nome}</li>`).join('')}</ul>
-    <p class="mudo pequeno">Para mudar de plano ou pagar a mensalidade, fala com a equipa Menu 3D.</p>`;
+    <p class="mudo pequeno">Para mudar de plano ou pagar a mensalidade, fala com a equipa Kuvê.</p>`;
 }
 
 // módulos do gerente carregados só quando são abertos
@@ -118,7 +118,7 @@ async function abrirModulo(caminho) {
 function pintarTopo() {
   $('#nome-restaurante').textContent = rest.name;
   $('#link-menu').href = `/m/${rest.slug}`;
-  document.documentElement.style.setProperty('--acento', rest.color);
+  document.documentElement.style.setProperty('--cor-restaurante', rest.color); // a cor do restaurante fica no avatar; a ferramenta é Kuvê
   for (const el of [$('#avatar'), $('#logo-vazio')]) {
     el.textContent = rest.logoUrl ? '' : (rest.name.trim()[0] || '').toUpperCase();
     el.style.backgroundImage = rest.logoUrl ? `url('${rest.logoUrl}')` : '';

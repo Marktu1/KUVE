@@ -3,49 +3,114 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#18201D">
-<title>Menu 3D</title>
-<link rel="stylesheet" href="/vendor/letras/bricolage.css">
+<meta name="theme-color" content="#0E2A33">
+<meta name="description" content="Kuvê: menus de restaurante com cada prato em 3D e na mesa do cliente, em realidade aumentada e tamanho real.">
+<meta property="og:title" content="Kuvê · Vê antes de escolher">
+<meta property="og:description" content="O cliente lê o QR, vê o prato em 3D, põe-no na mesa em tamanho real e pede.">
+<meta property="og:image" content="/img/kuve-180.png">
+<title>Kuvê · Vê antes de escolher</title>
+<link rel="icon" href="/img/kuve.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/img/kuve-180.png">
+<link rel="stylesheet" href="/vendor/letras/sora.css">
 <link rel="stylesheet" href="/vendor/letras/figtree.css">
 <link rel="stylesheet" href="/css/base.css">
 <style>
-  body { background: var(--tinta); color: var(--porcelana); min-height: 100vh; overflow-x: hidden; }
-  .topo { display: flex; justify-content: space-between; align-items: center; padding: 28px 24px; max-width: 1180px; margin: 0 auto; }
-  .topo .marca { color: var(--porcelana); }
-  .topo a.entrar { color: rgba(245,245,241,.8); font-weight: 600; text-decoration: none; }
-  main { position: relative; max-width: 1180px; margin: 0 auto; padding: 40px 24px 80px; display: grid; gap: 28px; }
-  h1 { font-size: clamp(2.8rem, 9vw, 6rem); font-weight: 800; letter-spacing: -0.045em; line-height: .95; max-width: 11ch; position: relative; z-index: 1; }
-  p.lead { max-width: 40ch; font-size: 1.1875rem; color: rgba(245,245,241,.72); position: relative; z-index: 1; }
-  .acoes { display: flex; gap: 10px; flex-wrap: wrap; position: relative; z-index: 1; }
-  .btn.claro { background: var(--porcelana); color: var(--tinta); border-color: var(--porcelana); }
-  .prato { position: absolute; right: -140px; top: -30px; width: min(68vw, 600px); aspect-ratio: 1; border-radius: 50%;
-    background: radial-gradient(circle at 42% 38%, #FFFFFF 0 46%, #EEF0EA 47% 52%, #FFFFFF 53% 64%, #DADDD5 65% 67%, transparent 68%);
-    filter: drop-shadow(0 50px 50px rgba(0,0,0,.5)); display: grid; place-items: center; opacity: .95; }
-  .prato span { width: 34%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #F7D48A, var(--dende)); box-shadow: 0 20px 30px -12px rgba(107,74,0,.8); }
-  .passos { list-style: none; padding: 0; margin: 40px 0 0; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); position: relative; z-index: 1; }
-  .passos li { padding: 20px; border-radius: var(--r-l); background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); }
-  .passos b { display: block; font: 700 1.125rem var(--f-titulo); margin-bottom: 6px; }
-  .passos span { color: rgba(245,245,241,.68); font-size: .9375rem; }
-  @media (max-width: 700px) { .prato { right: -160px; top: 120px; opacity: .35; } }
+  /* Página inicial Kuvê: azul-petróleo, um laranja, o cubo como herói. */
+  body { background: var(--kuve-petroleo); color: var(--kuve-nevoa); min-height: 100vh; overflow-x: hidden; }
+  .moldura { max-width: 1180px; margin: 0 auto; padding-inline: 24px; }
+  .topo { display: flex; justify-content: space-between; align-items: center; padding-block: 28px; }
+  .topo .marca { color: var(--kuve-nevoa); }
+  .topo .entrar { color: rgba(var(--porcelana-rgb), .82); font-weight: 600; text-decoration: none; padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(var(--porcelana-rgb), .2); transition: background-color .2s, border-color .2s; }
+  .topo .entrar:hover { background: rgba(var(--porcelana-rgb), .06); border-color: rgba(var(--porcelana-rgb), .4); }
+
+  .heroi { position: relative; display: grid; gap: 28px; padding-block: 32px 72px; grid-template-columns: 1fr; align-items: center; }
+  @media (min-width: 900px) { .heroi { grid-template-columns: 1.05fr .95fr; padding-block: 56px 96px; } }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font: 600 .75rem var(--f-marca); letter-spacing: .14em; text-transform: uppercase; color: var(--kuve-laranja); }
+  .eyebrow::before { content: ""; width: 22px; height: 2px; background: currentColor; border-radius: 2px; }
+  h1 { font: 800 clamp(3rem, 9vw, 6.2rem)/.92 var(--f-marca); letter-spacing: -0.06em; margin: 18px 0 0; max-width: 9ch; text-wrap: balance; }
+  h1 em { font-style: normal; color: var(--kuve-laranja); }
+  .lead { max-width: 40ch; margin-top: 22px; font-size: 1.1875rem; line-height: 1.55; color: rgba(var(--porcelana-rgb), .74); }
+  .acoes { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 30px; }
+  .btn.grande { min-height: 54px; padding: 0 1.5rem; font-size: 1rem; }
+  .btn.claro-contorno { background: transparent; color: var(--kuve-nevoa); border-color: rgba(var(--porcelana-rgb), .28); }
+  .btn.claro-contorno:hover { background: rgba(var(--porcelana-rgb), .06) !important; }
+
+  /* palco: prato com o cubo laranja a pairar sobre uma mesa em grelha */
+  .palco { position: relative; aspect-ratio: 1; width: min(100%, 520px); justify-self: center; }
+  .palco .chao { position: absolute; inset: 8% -10% -6%; opacity: .55;
+    background-image: linear-gradient(rgba(var(--porcelana-rgb), .1) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--porcelana-rgb), .1) 1px, transparent 1px);
+    background-size: 36px 36px; transform: perspective(700px) rotateX(58deg); transform-origin: 50% 80%;
+    -webkit-mask-image: radial-gradient(ellipse 55% 55% at 50% 60%, #000 25%, transparent 72%); mask-image: radial-gradient(ellipse 55% 55% at 50% 60%, #000 25%, transparent 72%); }
+  .palco .prato { position: absolute; left: 12%; right: 12%; bottom: 14%; aspect-ratio: 1 / .42; border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 45%, #FFFFFF 0 48%, #E8EFEF 50% 58%, #FFFFFF 60% 68%, #D3DEE0 70% 72%, transparent 73%);
+    filter: drop-shadow(0 30px 34px rgba(0,0,0,.45)); }
+  .palco .cubo { position: absolute; left: 50%; top: 18%; width: 46%; aspect-ratio: 1; transform: translateX(-50%); animation: paira 5s ease-in-out infinite; }
+  .palco .cubo svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 26px 26px rgba(122,46,12,.45)); }
+  .palco .sombra { position: absolute; left: 34%; right: 34%; bottom: 27%; height: 7%; border-radius: 50%; background: rgba(0,0,0,.28); filter: blur(10px); animation: sombra 5s ease-in-out infinite; }
+  .palco .etiqueta { position: absolute; display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 999px; font: 600 .8125rem var(--f-marca);
+    background: rgba(var(--porcelana-rgb), .08); border: 1px solid rgba(var(--porcelana-rgb), .16); color: var(--kuve-nevoa); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+  .palco .etiqueta b { color: var(--kuve-laranja); font-weight: 700; }
+  .palco .e1 { left: 0; top: 16%; } .palco .e2 { right: 0; top: 52%; }
+  @keyframes paira { 50% { transform: translate(-50%, -5%); } }
+  @keyframes sombra { 50% { transform: scale(.86); opacity: .7; } }
+
+  .passos { list-style: none; padding: 0; margin: 0 0 72px; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); counter-reset: p; }
+  .passos li { position: relative; padding: 24px; border-radius: var(--r-l); background: rgba(var(--porcelana-rgb), .04); border: 1px solid rgba(var(--porcelana-rgb), .09); counter-increment: p; }
+  .passos li::before { content: counter(p); display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; margin-bottom: 16px; background: var(--kuve-laranja); color: var(--kuve-petroleo); font: 800 .9375rem var(--f-marca); }
+  .passos b { display: block; font: 700 1.125rem var(--f-marca); letter-spacing: -0.02em; margin-bottom: 6px; }
+  .passos span { color: rgba(var(--porcelana-rgb), .68); font-size: .9375rem; }
+
+  .rodape { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding-block: 28px 40px; border-top: 1px solid rgba(var(--porcelana-rgb), .1); color: rgba(var(--porcelana-rgb), .55); font-size: .875rem; }
+  .rodape .marca { color: var(--kuve-nevoa); font-size: 1.05rem; }
+  .rodape .marca > svg { width: 26px; height: 26px; }
 </style>
 </head>
 <body>
-<header class="topo">
-  <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg> Menu 3D</span>
-  <a class="entrar" href="/estudio">Entrar</a>
-</header>
-<main>
-  <div class="prato" aria-hidden="true"><span></span></div>
-  <h1>O prato chega à mesa antes do pedido.</h1>
-  <p class="lead">O cliente lê o QR, vê cada prato em 3D e põe-no em cima da mesa, ao tamanho real. Depois pede, sem esperar pelo empregado.</p>
-  <div class="acoes">
-    <a class="btn acento" href="/estudio">Criar o menu do meu restaurante</a>
-  </div>
-  <ol class="passos">
-    <li><b>Fotografa ou carrega</b><span>O prato vira modelo 3D, à escala real e leve para o telemóvel.</span></li>
-    <li><b>Imprime os QR</b><span>Um por mesa. O pedido chega à cozinha já com o número da mesa.</span></li>
-    <li><b>O menu de papel ganha vida</b><span>Aponta a câmara ao menu impresso e os pratos aparecem por cima.</span></li>
-  </ol>
-</main>
+<div class="moldura">
+  <header class="topo">
+    <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg><span class="marca-nome" aria-hidden="true">Kuv<span class="marca-e">e<svg viewBox="0 0 60 30"><use href="/img/icones.svg#acento"/></svg></span></span><span class="sr">Kuvê</span></span>
+    <a class="entrar" href="/estudio">Entrar no estúdio</a>
+  </header>
+
+  <main>
+    <section class="heroi">
+      <div>
+        <span class="eyebrow">Menu 3D para restaurantes</span>
+        <h1><em>Vê</em> antes de escolher.</h1>
+        <p class="lead">O cliente lê o QR da mesa, vê cada prato em 3D e põe-no em cima da mesa, em tamanho real. Depois pede, sem esperar pelo empregado.</p>
+        <div class="acoes">
+          <a class="btn acento grande" href="/estudio">Criar o menu do meu restaurante</a>
+          <a class="btn claro-contorno grande" href="/equipa">Ecrã da equipa</a>
+        </div>
+      </div>
+      <div class="palco" aria-hidden="true">
+        <div class="chao"></div>
+        <div class="prato"></div>
+        <div class="sombra"></div>
+        <div class="cubo">
+          <svg viewBox="0 0 100 100">
+            <path d="M50 8 88 30 50 52 12 30z" fill="#FF8A52"/>
+            <path d="M12 30 50 52v44L12 74z" fill="#F26B2A"/>
+            <path d="M88 30 50 52v44l38-22z" fill="#C2561F"/>
+            <path d="M50 8 88 30 50 52 12 30z" fill="none" stroke="#FFFFFF" stroke-opacity=".35" stroke-width=".8"/>
+          </svg>
+        </div>
+        <span class="etiqueta e1"><b>3D</b> Escala real</span>
+        <span class="etiqueta e2">Ver na minha mesa</span>
+      </div>
+    </section>
+
+    <ol class="passos">
+      <li><b>Fotografa ou carrega</b><span>O prato vira modelo 3D, à escala real e leve para o telemóvel.</span></li>
+      <li><b>Imprime os QR</b><span>Um por mesa. O pedido chega à cozinha já com o número da mesa.</span></li>
+      <li><b>O menu de papel ganha vida</b><span>Aponta a câmara ao menu impresso e os pratos aparecem por cima.</span></li>
+    </ol>
+  </main>
+
+  <footer class="rodape">
+    <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg><span class="marca-nome" aria-hidden="true">Kuv<span class="marca-e">e<svg viewBox="0 0 60 30"><use href="/img/icones.svg#acento"/></svg></span></span><span class="sr">Kuvê</span></span>
+    <span>Feito em Luanda · Vê antes de escolher.</span>
+  </footer>
+</div>
 </body>
 </html>

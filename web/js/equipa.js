@@ -93,9 +93,9 @@ $('#sair').addEventListener('click', () => sair());
 // ---------------- trabalho ----------------
 function iniciar() {
   // sessões guardadas por versões antigas não trazem permissões: pede o PIN de novo
-  if (!Array.isArray(sess?.membro?.permissoes)) return sair('Atualizámos o Menu 3D. Entra de novo com o teu PIN.');
+  if (!Array.isArray(sess?.membro?.permissoes)) return sair('Atualizámos a Kuvê. Entra de novo com o teu PIN.');
   const r = sess.restaurante;
-  document.documentElement.style.setProperty('--acento', r.cor || '#C8322B');
+  if (r.cor) document.documentElement.style.setProperty('--cor-restaurante', r.cor); // identidade do restaurante só no avatar
   $('#rest-nome').textContent = r.nome;
   $('#membro-nome').textContent = `${sess.membro.nome} · ${FUNCAO[sess.membro.funcao] || ''}`;
   $('#avatar').textContent = r.logoUrl ? '' : (r.nome.trim()[0] || '').toUpperCase();

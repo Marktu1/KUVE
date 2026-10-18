@@ -132,8 +132,11 @@ body { padding-bottom: 110px; transition: opacity .25s ease-out; }
 .contactos { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .contactos a, .contactos span { display: inline-flex; align-items: center; gap: 7px; padding: 9px 14px; border-radius: var(--r-botao, 999px); background: var(--branco); border: 1px solid var(--linha); color: var(--tinta-2); text-decoration: none; font-weight: 600; font-size: .875rem; }
 .contactos svg { width: 17px; height: 17px; }
-.rodape .marca { font-size: .9375rem; color: var(--musgo); opacity: .8; }
-.rodape .marca svg { width: 22px; height: 22px; }
+/* "Menu 3D por Kuvê": discreto, com as cores do restaurante; só o acento-cubo é sempre laranja */
+.rodape .marca { gap: .45rem; font-size: 1.0625rem; color: var(--tinta); opacity: .78; transition: opacity .2s; }
+.rodape .marca:hover { opacity: 1; }
+.rodape .marca > svg { width: 22px; height: 22px; }
+.rodape .marca-por-txt { font: 500 .8125rem/1 var(--f-texto); letter-spacing: 0; color: var(--musgo); margin-right: .1rem; }
 
 /* Folhas (prato e pedido) */
 .folha { position: fixed; inset: 0; z-index: 20; display: flex; align-items: flex-end; justify-content: center; background: rgba(0, 0, 0, .5); animation: escurece .25s ease-out; }

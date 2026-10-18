@@ -177,7 +177,7 @@ function pilulaEstado(r) {
 }
 
 function avatar(r) {
-  return `<span class="avatar" style="${r.logoUrl ? `background-image:url('${esc(r.logoUrl)}');background-color:${esc(r.tema?.fundo || '#FFFFFF')};background-size:contain;background-repeat:no-repeat;background-origin:content-box;padding:3px` : `background-color:${esc(r.cor || '#18201D')}`}">${r.logoUrl ? '' : esc((r.nome.trim()[0] || '').toUpperCase())}</span>`;
+  return `<span class="avatar" style="${r.logoUrl ? `background-image:url('${esc(r.logoUrl)}');background-color:${esc(r.tema?.fundo || '#FFFFFF')};background-size:contain;background-repeat:no-repeat;background-origin:content-box;padding:3px` : `background-color:${esc(r.cor || '#1C3D47')}`}">${r.logoUrl ? '' : esc((r.nome.trim()[0] || '').toUpperCase())}</span>`;
 }
 
 function amostraTema(r) {

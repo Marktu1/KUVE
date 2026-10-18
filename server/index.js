@@ -1,4 +1,4 @@
-// Menu 3D — servidor principal
+// Kuvê — servidor principal (produto Menu 3D)
 // API dos restaurantes, pratos, pedidos e fila de IA (foto → 3D) + ficheiros estáticos.
 import express from 'express';
 import multer from 'multer';
@@ -27,7 +27,7 @@ fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 const store = createStore(DATA_DIR);
 const { db } = store;
 
-// Chave do painel da plataforma (o dono do Menu 3D).
+// Chave do painel da plataforma (a equipa Kuvê).
 // Usa PLATAFORMA_CHAVE se existir; senão gera uma na primeira vez e guarda-a num ficheiro do servidor.
 if (process.env.PLATAFORMA_CHAVE) {
   db.plataforma.chaveHash = crypto.createHash('sha256').update(process.env.PLATAFORMA_CHAVE).digest('hex');
@@ -121,7 +121,7 @@ const planos = () => db.plataforma.planos || [];
 const planoDe = r => planos().find(p => p.id === r.plano) || planos().find(p => p.id === 'teste') || limparPlano({ funcionalidades: Object.keys(FUNCIONALIDADES) });
 const temFuncionalidade = (r, f) => planoDe(r).funcionalidades.includes(f);
 function exigirFuncionalidade(r, f) {
-  if (!temFuncionalidade(r, f)) throw new HttpError(403, `"${FUNCIONALIDADES[f]}" não está incluído no plano ${planoDe(r).nome}. Fala com a equipa Menu 3D para mudar de plano.`);
+  if (!temFuncionalidade(r, f)) throw new HttpError(403, `"${FUNCIONALIDADES[f]}" não está incluído no plano ${planoDe(r).nome}. Fala com a equipa Kuvê para mudar de plano.`);
 }
 function usoDe(r) {
   const pratos = db.dishes.filter(d => d.restaurantId === r.id);
@@ -129,7 +129,7 @@ function usoDe(r) {
 }
 function exigirLimite(r, k, aMais = 1) {
   const max = planoDe(r).limites[k] ?? 0;
-  if (usoDe(r)[k] + aMais > max) throw new HttpError(403, max ? `O plano ${planoDe(r).nome} permite até ${max} (${LIMITES[k].toLowerCase()}). Fala com a equipa Menu 3D para mudar de plano.` : `${LIMITES[k]} não está incluído no plano ${planoDe(r).nome}.`);
+  if (usoDe(r)[k] + aMais > max) throw new HttpError(403, max ? `O plano ${planoDe(r).nome} permite até ${max} (${LIMITES[k].toLowerCase()}). Fala com a equipa Kuvê para mudar de plano.` : `${LIMITES[k]} não está incluído no plano ${planoDe(r).nome}.`);
 }
 
 // ---------- mesas ----------
@@ -262,7 +262,7 @@ app.put('/api/restaurants/:id', wrap(async (req, res) => {
   if (b.currency !== undefined) r.currency = str(b.currency, 6) || 'Kz';
   if (b.color !== undefined && /^#[0-9a-f]{6}$/i.test(b.color) && b.color.toUpperCase() !== (r.color || '').toUpperCase()) {
     const plataforma = (req.get('x-admin-key') || '').startsWith('plat:');
-    if (r.identidadeBloqueada && !plataforma) throw new HttpError(403, 'A identidade deste menu é gerida pela plataforma Menu 3D.');
+    if (r.identidadeBloqueada && !plataforma) throw new HttpError(403, 'A identidade deste menu é gerida pela plataforma Kuvê.');
     r.color = b.color;
     if (r.tema) r.tema.cores.acento = b.color.toUpperCase();
   }
@@ -914,7 +914,7 @@ app.post('/api/worker/jobs/:jobId/result', (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-// ---------- painel da plataforma (dono do Menu 3D) ----------
+// ---------- painel da plataforma (equipa Kuvê) ----------
 const planoExiste = id => planos().some(p => p.id === id);
 const ESTADOS_CONTA = ['ativo', 'suspenso'];
 
@@ -1211,7 +1211,7 @@ process.on('SIGINT', () => { store.flush(); process.exit(0); });
 process.on('SIGTERM', () => { store.flush(); process.exit(0); });
 
 app.listen(PORT, () => {
-  console.log(`Menu 3D a correr em ${PUBLIC_URL}`);
+  console.log(`Kuvê a correr em ${PUBLIC_URL}`);
   console.log(`Estúdio: ${PUBLIC_URL}/estudio`);
   if (!WORKER_TOKEN) console.log('Aviso: WORKER_TOKEN não definido — a geração IA fica desligada.');
 });

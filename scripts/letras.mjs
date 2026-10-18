@@ -1,4 +1,4 @@
-// Copia as letras dos temas para web/vendor/letras (servidas pelo próprio Menu 3D, sem Google Fonts)
+// Copia as letras dos temas para web/vendor/letras (servidas pelo próprio servidor Kuvê, sem Google Fonts). Inclui a Sora, a letra da marca.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

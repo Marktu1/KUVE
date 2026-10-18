@@ -3,9 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#F5F5F1">
-<title>Estúdio · Menu 3D</title>
-<link rel="stylesheet" href="/vendor/letras/bricolage.css">
+<meta name="theme-color" content="#F2F5F5">
+<title>Estúdio · Kuvê</title>
+<link rel="icon" href="/img/kuve.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/img/kuve-180.png">
+<link rel="manifest" href="/estudio.webmanifest">
+<link rel="stylesheet" href="/vendor/letras/sora.css">
 <link rel="stylesheet" href="/vendor/letras/figtree.css">
 <link rel="stylesheet" href="/css/base.css">
 <link rel="stylesheet" href="/css/studio.css">
@@ -22,10 +25,10 @@
 <!-- ============ ENTRADA ============ -->
 <main id="entrada" class="entrada oculto">
   <section class="entrada-heroi">
-    <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg> Menu 3D</span>
+    <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg><span class="marca-nome" aria-hidden="true">Kuv<span class="marca-e">e<svg viewBox="0 0 60 30"><use href="/img/icones.svg#acento"/></svg></span></span><span class="sr">Kuvê</span></span>
     <div class="heroi-prato" aria-hidden="true">
       <div class="heroi-sombra"></div>
-      <div class="heroi-disco"><span class="heroi-cubo"><svg class="ic"><use href="/img/icones.svg#cubo"/></svg></span></div>
+      <div class="heroi-disco"><span class="heroi-cubo"><svg viewBox="0 0 100 100"><path d="M50 8 88 30 50 52 12 30z" fill="#FF8A52"/><path d="M12 30 50 52v44L12 74z" fill="#F26B2A"/><path d="M88 30 50 52v44l38-22z" fill="#C2561F"/></svg></span></div>
     </div>
     <h1>Cada prato, na mesa do cliente, antes de ele pedir.</h1>
     <p>Carrega o modelo ou tira fotos, ajusta o tamanho real e partilha o menu por QR. O cliente vê o prato em 3D e pede daqui.</p>
@@ -63,7 +66,7 @@
 <!-- ============ ESTÚDIO ============ -->
 <div id="app" class="app oculto">
   <aside class="lateral">
-    <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg> Menu 3D</span>
+    <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg><span class="marca-nome" aria-hidden="true">Kuv<span class="marca-e">e<svg viewBox="0 0 60 30"><use href="/img/icones.svg#acento"/></svg></span></span><span class="sr">Kuvê</span></span>
     <div class="restaurante-chip">
       <span id="avatar" class="avatar"></span>
       <span class="restaurante-texto">
@@ -375,7 +378,7 @@
             <label class="campo"><span>Moeda</span><input name="currency" type="text" maxlength="6"></label>
           </div>
           <div class="dois">
-            <label class="campo"><span>Cor da marca</span><input name="color" type="color"><small id="cor-bloqueada" class="oculto">A identidade do teu menu é gerida pela equipa Menu 3D.</small></label>
+            <label class="campo"><span>Cor do restaurante</span><input name="color" type="color"><small id="cor-bloqueada" class="oculto">A identidade do teu menu é gerida pela equipa Kuvê.</small></label>
             <label class="campo"><span>Mesas</span><input name="tables" type="number" min="1" max="200"></label>
           </div>
           <label class="campo"><span>Categorias do menu</span><input name="categories" type="text"><small>Separadas por vírgulas, pela ordem em que aparecem.</small></label>

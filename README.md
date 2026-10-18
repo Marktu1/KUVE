@@ -1,4 +1,6 @@
-# Menu 3D
+# Kuvê · Menu 3D
+
+> **Vê antes de escolher.** Kuvê é a marca; o Menu 3D é o primeiro produto (restaurantes).
 
 Plataforma própria para restaurantes: o cliente lê o QR na mesa, vê cada prato em 3D, põe-no em cima da mesa ao tamanho real e faz o pedido. Tudo em software aberto e nosso, sem pagar tokens a plataformas de terceiros.
 
@@ -10,7 +12,7 @@ Plataforma própria para restaurantes: o cliente lê o QR na mesa, vê cada prat
 | Menu do cliente com AR | `/m/<restaurante>?mesa=4` | Cliente na mesa |
 | Menu impresso com Image AR | `/p/<restaurante>` | Cliente com o menu de papel |
 | Painel de pedidos | separador **Pedidos** no estúdio | Cozinha / balcão |
-| **Painel da plataforma** | `/plataforma` | Tu, o dono do Menu 3D |
+| **Painel da plataforma** | `/plataforma` | Tu, a equipa Kuvê |
 | Worker de IA (foto → 3D) | `ai-worker/` | Servidor com GPU |
 
 **Estúdio**
@@ -57,7 +59,7 @@ Cada restaurante tem o seu menu, com a sua cara. No teu painel, o pincel em cada
 - **Forma:** disposição (lista, grelha, fotos grandes), cabeçalho (clássico, centrado com logo, foto de capa), prato (porcelana branca/preta, ardósia, madeira, barro, sem prato), mesa por trás do 3D, cantos, botões, luz do 3D e movimento.
 - **Conteúdo:** logo, aviso no topo com data de fim, até 8 sugestões do chefe, textos dos botões, frase do rodapé, Instagram/TikTok/Facebook, telefone, morada, mapa e site.
 - **Horário:** aberto/fechado por dia (aceita fecho depois da meia-noite). Fora de horas o menu mostra "Fechado · abre às…" e o servidor recusa pedidos, a não ser que ligues "aceitar pedidos fora de horas".
-- **Mais:** tirar a marca "Menu 3D" do rodapé, bloquear a cor para o gerente não a mudar, CSS extra (filtrado) e versões publicadas para repor.
+- **Mais:** tirar "Menu 3D por Kuvê" do rodapé, bloquear a cor para o gerente não a mudar, CSS extra (filtrado) e versões publicadas para repor.
 
 As alterações ficam num **rascunho** que se guarda sozinho e que os clientes não veem. Só mudam o menu quando carregas em **Publicar**; a versão anterior fica guardada (últimas 10).
 
@@ -84,7 +86,7 @@ As alterações ficam num **rascunho** que se guarda sozinho e que os clientes n
 - Cada plano tem preço mensal, limites (pratos, pratos com 3D, mesas, pessoas na equipa) e funcionalidades (pedidos, mesas, equipa, pagamentos, painel, menu impresso em AR, IA foto→3D, identidade personalizada).
 - Os planos ficam na base de dados e editam-se no painel; não há preços no código. Os valores de partida (Menu 15 000 Kz, Profissional 35 000 Kz, Premium 65 000 Kz) são exemplos a validar com os restaurantes-piloto.
 - O servidor aplica os limites e as funcionalidades (erro claro, sem detalhes internos). O gerente vê o seu plano, o uso e o que está incluído no separador Restaurante.
-- O Menu 3D não cobra nada automaticamente: o pagamento da mensalidade regista-se em "Pago até" na gaveta do restaurante.
+- A Kuvê não cobra nada automaticamente: o pagamento da mensalidade regista-se em "Pago até" na gaveta do restaurante.
 
 ### Painel do gerente (`/estudio`, separador Painel)
 
@@ -107,10 +109,18 @@ As alterações ficam num **rascunho** que se guarda sozinho e que os clientes n
 
 **Chave da plataforma:** define `PLATAFORMA_CHAVE` nas variáveis de ambiente. Se não a definires, o servidor cria uma no primeiro arranque, mostra-a no terminal e guarda-a em `DATA_DIR/CHAVE-DA-PLATAFORMA.txt`. Guarda-a num gestor de palavras-passe e apaga esse ficheiro.
 
+## Marca Kuvê
+
+A ferramenta (página inicial, estúdio, plataforma, equipa) usa a identidade Kuvê: azul-petróleo `#0E2A33`, laranja `#F26B2A`, letra **Sora** nos títulos e **Figtree** no texto. O símbolo é o acento do "ê" desenhado como a aresta de um cubo 3D.
+
+O menu do cliente continua com a identidade de cada restaurante; a Kuvê aparece só no rodapé ("Menu 3D por Kuvê"), que se desliga no editor de identidade.
+
+Tudo sai de `web/css/base.css` (tokens) e `web/img/icones.svg` (símbolos `marca` e `acento`). Regras de uso, contraste e o que não fazer: [`docs/MARCA.md`](docs/MARCA.md). O teste `test/marca.test.mjs` falha se a paleta antiga voltar ou se um par de cores perder o contraste AA.
+
 ## Arquitetura
 
 ```
- Telemóvel do cliente            Servidor Menu 3D (Node)              Worker IA (GPU)
+ Telemóvel do cliente            Servidor Kuvê (Node)                  Worker IA (GPU)
  ─────────────────────           ───────────────────────              ───────────────
  /m/… model-viewer  ──API──▶     Express + ficheiros       ◀──puxa──  worker.py
  /p/… MindAR + three             /api, /uploads, QR (SVG)   ──GLB──▶  TRELLIS (MIT)

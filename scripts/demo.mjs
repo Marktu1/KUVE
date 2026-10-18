@@ -112,7 +112,7 @@ if (ja) {
     ...tema, base: 'tasca', cores: { fundo: '#F1E7D3', superficie: '#FBF6EC', texto: '#33241A', suave: '#7B6450', acento: '#8E2C1C', destaque: '#D19A3B' },
     letras: { titulo: 'playfair', texto: 'lora' }, prato: 'madeira', textura: 'madeira', cantos: 'suave', botoes: 'suave',
     destaques: [ids['Mufete'], ids['Muamba de galinha'], ids['Abacate recheado']],
-    aviso: { ativo: true, texto: 'Restaurante fictício para demonstração do Menu 3D', ate: '' },
+    aviso: { ativo: true, texto: 'Restaurante fictício para demonstração da Kuvê', ate: '' },
   } } });
 
   const linha = '─'.repeat(64);

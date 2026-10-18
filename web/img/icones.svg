@@ -1,10 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg">
+  <!-- Kuvê: o símbolo é o acento do "ê" — a aresta de um cubo 3D. Laranja sobre azul-petróleo. -->
   <symbol id="marca" viewBox="0 0 32 32">
-    <circle cx="16" cy="16" r="15" fill="#18201D"/>
-    <circle cx="16" cy="16" r="10.5" fill="none" stroke="#F5F5F1" stroke-opacity=".28" stroke-width="1.2"/>
-    <path d="M16 9.2 21.6 12.4v6.5L16 22.1l-5.6-3.2v-6.5z" fill="#E3A532"/>
-    <path d="M16 9.2 21.6 12.4 16 15.6l-5.6-3.2z" fill="#F7D48A"/>
-    <path d="M16 15.6v6.5" stroke="#18201D" stroke-opacity=".25" stroke-width=".8"/>
+    <rect x=".5" y=".5" width="31" height="31" rx="9" fill="#0E2A33"/>
+    <rect x=".5" y=".5" width="31" height="31" rx="9" fill="none" stroke="#F2F5F5" stroke-opacity=".16"/>
+    <path d="M6 21 16 11v4.67L11.33 21z" fill="#F26B2A"/>
+    <path d="M16 11 26 21h-4.67L16 15.67z" fill="#F26B2A"/>
+    <path d="M16 11 26 21h-4.67L16 15.67z" fill="#000" fill-opacity=".28"/>
+  </symbol>
+  <symbol id="acento" viewBox="0 0 60 30">
+    <path d="M0 30 30 0v14L14 30z" fill="#F26B2A"/>
+    <path d="M30 0 60 30H46L30 14z" fill="#F26B2A"/>
+    <path d="M30 0 60 30H46L30 14z" fill="#000" fill-opacity=".28"/>
   </symbol>
   <symbol id="grafico" viewBox="0 0 24 24"><path d="M4 19.5h16"/><path d="M5.5 15.5 10 11l3 3 5.5-6.5"/><path d="M15 7.5h3.5V11"/></symbol>
   <symbol id="equipa" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19.5c.6-3.3 2.8-5 5.5-5s4.9 1.7 5.5 5"/><circle cx="17" cy="9.5" r="2.4"/><path d="M15.8 14.7c2.4.1 4.1 1.6 4.7 4.3"/></symbol>

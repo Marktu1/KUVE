@@ -3,10 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#18201D">
+<meta name="theme-color" content="#0E2A33">
 <meta name="robots" content="noindex">
-<title>Plataforma · Menu 3D</title>
-<link rel="stylesheet" href="/vendor/letras/bricolage.css">
+<title>Plataforma · Kuvê</title>
+<link rel="icon" href="/img/kuve.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/img/kuve-180.png">
+<link rel="stylesheet" href="/vendor/letras/sora.css">
 <link rel="stylesheet" href="/vendor/letras/figtree.css">
 <link rel="stylesheet" href="/css/base.css">
 <link rel="stylesheet" href="/css/plataforma.css">
@@ -17,10 +19,10 @@
 <!-- Entrada -->
 <main id="entrada" class="entrada oculto">
   <form id="f-entrar" class="cartao entrar">
-    <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg> Menu 3D</span>
+    <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg><span class="marca-nome" aria-hidden="true">Kuv<span class="marca-e">e<svg viewBox="0 0 60 30"><use href="/img/icones.svg#acento"/></svg></span></span><span class="sr">Kuvê</span></span>
     <div>
       <h1>Painel da plataforma</h1>
-      <p class="mudo">Só para o dono do Menu 3D. A chave foi criada no primeiro arranque do servidor.</p>
+      <p class="mudo">Só para a equipa Kuvê. A chave foi criada no primeiro arranque do servidor.</p>
     </div>
     <label class="campo"><span>Chave da plataforma</span><input id="chave" type="password" required autocomplete="current-password"></label>
     <button class="btn acento grande" type="submit">Entrar</button>
@@ -31,7 +33,7 @@
 <div id="app" class="oculto">
   <header class="barra">
     <div class="barra-in">
-      <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg> Menu 3D <span class="sub-marca">Plataforma</span></span>
+      <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg><span class="marca-nome" aria-hidden="true">Kuv<span class="marca-e">e<svg viewBox="0 0 60 30"><use href="/img/icones.svg#acento"/></svg></span></span><span class="sr">Kuvê</span> <span class="sub-marca">Plataforma</span></span>
       <div class="barra-acoes">
         <span id="atualizado" class="atualizado"></span>
         <button id="novo" class="btn acento pequeno"><svg class="ic"><use href="/img/icones.svg#mais"/></svg>Novo restaurante</button>
@@ -94,7 +96,7 @@
           <tbody id="planos-linhas"></tbody>
         </table>
       </div>
-      <p class="mudo pequeno nota-planos">Os limites e as funcionalidades são aplicados no servidor. Mudar um plano afeta logo todos os restaurantes que o usam. Os preços são só para a tua gestão: o Menu 3D não cobra nada automaticamente.</p>
+      <p class="mudo pequeno nota-planos">Os limites e as funcionalidades são aplicados no servidor. Mudar um plano afeta logo todos os restaurantes que o usam. Os preços são só para a tua gestão: a Kuvê não cobra nada automaticamente.</p>
     </section>
 
     <section class="cartao ia">
@@ -376,7 +378,7 @@
         <!-- AVANÇADO -->
         <section data-sec="avancado" class="oculto">
           <div class="id-bloco">
-            <div class="id-bloco-cab"><h3>Mostrar "Menu 3D" no rodapé</h3><label class="interruptor"><input type="checkbox" data-t="marcaMenu3D"><span class="sr">Mostrar a marca Menu 3D</span></label></div>
+            <div class="id-bloco-cab"><h3>Mostrar "Menu 3D por Kuvê" no rodapé</h3><label class="interruptor"><input type="checkbox" data-t="marcaMenu3D"><span class="sr">Mostrar a marca Kuvê</span></label></div>
             <p class="mudo pequeno">Desliga para clientes com marca própria (por exemplo, no plano Profissional).</p>
           </div>
           <div class="id-bloco">

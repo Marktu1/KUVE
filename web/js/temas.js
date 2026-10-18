@@ -15,6 +15,7 @@ export const LETRAS = {
     josefin: { nome: 'Josefin Sans', q: 'Josefin+Sans:wght@600;700', tipo: 'sans', estilo: 'Geométrica' },
     unbounded: { nome: 'Unbounded', q: 'Unbounded:wght@600;700;800', tipo: 'sans', estilo: 'Larga' },
     caveat: { nome: 'Caveat', q: 'Caveat:wght@600;700', tipo: 'cursive', estilo: 'Manuscrita' },
+    sora: { nome: 'Sora', q: 'Sora:wght@500;600;700;800', tipo: 'sans', estilo: 'Kuvê' },
   },
   texto: {
     figtree: { nome: 'Figtree', q: 'Figtree:wght@400;500;600;700', tipo: 'sans' },
@@ -66,7 +67,7 @@ export const PADRAO = {
   destaques: [],
   horario: { ativo: false, pedidosFora: false, dias: DIAS_PADRAO },
   contactos: { instagram: '', facebook: '', tiktok: '', telefone: '', morada: '', mapa: '', site: '' },
-  marcaMenu3D: true,
+  marcaMenu3D: true, // mostra "Menu 3D por Kuvê" no rodapé (nome do campo mantido por compatibilidade com dados guardados)
   cssExtra: '',
 };
 

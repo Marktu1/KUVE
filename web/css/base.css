@@ -1,22 +1,53 @@
-/* Menu 3D — tokens e base partilhada
-   Ideia: porcelana sobre linho. O prato é o herói; tudo à volta é calmo e preciso. */
+/* Kuvê — tokens e base partilhada
+   Ideia: o prato é o herói; à volta, azul-petróleo calmo e um único laranja que chama a atenção. */
+/* ---------------------------------------------------------------------------
+   Marca Kuvê — fonte única das cores e letras da plataforma.
+   Usado pelo estúdio, painel da plataforma, equipa e página inicial.
+   O menu do cliente usa estes valores só como ponto de partida: o tema de cada
+   restaurante (js/temas.js → aplicarTema) substitui-os todos.
+   Guia completo: docs/MARCA.md
+   ------------------------------------------------------------------------- */
 :root {
-  --porcelana: #F5F5F1;
+  /* Kuvê — cores de marca */
+  --kuve-petroleo: #0E2A33;
+  --kuve-petroleo-2: #1C3D47;
+  --kuve-laranja: #F26B2A;
+  --kuve-laranja-forte: #B4491A;   /* laranja para texto sobre claro (contraste 4.9:1) */
+  --kuve-nevoa: #F2F5F5;
+
+  /* papéis (os nomes antigos mantêm-se: temas.js e o CSS do menu dependem deles) */
+  --porcelana: var(--kuve-nevoa);
   --branco: #FFFFFF;
-  --tinta: #18201D;
-  --tinta-2: #2A3330;
-  --musgo: #5F6B63;
-  --nevoa: #8C968F;
-  --linha: #E2E4DE;
-  --linha-forte: #CDD1CA;
-  --mesa: #ECEDE7;
-  --acento: #C8322B;      /* gindungo — substituído pela cor do restaurante */
-  --dende: #E3A532;       /* destaque do AR */
-  --dende-escuro: #6B4A00;
+  --tinta: var(--kuve-petroleo);
+  --tinta-2: var(--kuve-petroleo-2);
+  --musgo: #4A6168;
+  --nevoa: #869BA1;
+  --linha: #DEE6E7;
+  --linha-forte: #C4D2D5;
+  --mesa: #E7EEEF;
+  --realce: #F7FAFA;               /* linha de tabela ao passar o rato */
+  --acento: var(--kuve-laranja);   /* no menu do cliente: a cor do restaurante */
+  --acento-texto: var(--kuve-petroleo);
+  --dende: var(--kuve-laranja);    /* destaque do AR, foco, gráficos */
+  --dende-escuro: #8A3410;
+  --cor-restaurante: var(--kuve-petroleo-2); /* avatar do restaurante no estúdio e na equipa */
   --ok: #2F7A4F;
   --erro: #B42318;
 
-  --f-titulo: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  /* estados (fundos suaves + texto com contraste AA) */
+  --ok-fundo: #E6F4EC;     --ok-texto: #1F5A39;
+  --aviso-fundo: #FFF1E8;  --aviso-borda: #F7CDB3;  --aviso-texto: var(--dende-escuro);
+  --erro-fundo: #FDEEEC;   --erro-borda: #F4C2BB;
+  --info-fundo: #E3EEF1;   --info-texto: #1C4D5C;
+  --estado-preparacao: #2E7D93; /* azul-petróleo vivo: distinto do laranja dos novos, também em luminosidade */
+
+  /* canais RGB para transparências: rgba(var(--tinta-rgb), .5) */
+  --tinta-rgb: 14, 42, 51;
+  --porcelana-rgb: 242, 245, 245;
+  --laranja-rgb: 242, 107, 42;
+
+  --f-marca: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --f-titulo: var(--f-marca);
   --f-texto: "Figtree", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
   --r-xs: 6px;
@@ -25,18 +56,18 @@
   --r-l: 24px;
   --r-xl: 32px;
 
-  --sombra-1: 0 1px 2px rgba(24, 32, 29, .06), 0 1px 1px rgba(24, 32, 29, .04);
-  --sombra-2: 0 2px 4px rgba(24, 32, 29, .05), 0 12px 28px -12px rgba(24, 32, 29, .22);
-  --sombra-prato: 0 2px 3px rgba(24, 32, 29, .08), 0 18px 36px -16px rgba(24, 32, 29, .42);
+  --sombra-1: 0 1px 2px rgba(var(--tinta-rgb), .06), 0 1px 1px rgba(var(--tinta-rgb), .04);
+  --sombra-2: 0 2px 4px rgba(var(--tinta-rgb), .05), 0 12px 28px -12px rgba(var(--tinta-rgb), .24);
+  --sombra-prato: 0 2px 3px rgba(var(--tinta-rgb), .08), 0 18px 36px -16px rgba(var(--tinta-rgb), .42);
 
   /* linho: trama muito suave para a "mesa" onde os pratos pousam */
   --linho:
-    repeating-linear-gradient(0deg, rgba(24,32,29,.018) 0 1px, transparent 1px 3px),
-    repeating-linear-gradient(90deg, rgba(24,32,29,.018) 0 1px, transparent 1px 3px),
-    radial-gradient(120% 90% at 50% 40%, #F3F3EE 0%, #E7E8E1 100%);
+    repeating-linear-gradient(0deg, rgba(var(--tinta-rgb),.018) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(var(--tinta-rgb),.018) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 90% at 50% 40%, #F1F5F5 0%, #E4ECED 100%);
   /* prato de porcelana: base, aba e brilho */
   --prato:
-    radial-gradient(circle at 50% 50%, #FFFFFF 0 52%, #F1F2EE 53% 56%, #FFFFFF 57% 66%, #E9EAE5 67% 69%, transparent 70%);
+    radial-gradient(circle at 50% 50%, #FFFFFF 0 52%, #F0F3F3 53% 56%, #FFFFFF 57% 66%, #E6ECEC 67% 69%, transparent 70%);
 
   --facil: cubic-bezier(.2, .8, .2, 1);
 }
@@ -63,7 +94,7 @@ svg.ic { width: 20px; height: 20px; flex: none; stroke: currentColor; fill: none
 
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
-:focus-visible { outline: 3px solid var(--dende); outline-offset: 2px; border-radius: 6px; }
+:focus-visible { outline: 3px solid var(--kuve-laranja); outline-offset: 2px; border-radius: 6px; }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
@@ -81,7 +112,7 @@ button { cursor: pointer; }
 .btn.acento { background: var(--acento); border-color: var(--acento); color: var(--acento-texto, #fff); box-shadow: 0 8px 18px -10px var(--acento); }
 .btn.acento:hover:not(:disabled) { background: var(--acento); filter: brightness(1.06); }
 .btn.fantasma { background: transparent; border-color: transparent; color: var(--musgo); }
-.btn.fantasma:hover:not(:disabled) { background: rgba(24,32,29,.05); color: var(--tinta); }
+.btn.fantasma:hover:not(:disabled) { background: rgba(var(--tinta-rgb),.05); color: var(--tinta); }
 .btn.pequeno { min-height: 36px; padding: 0 .9rem; font-size: .875rem; }
 .btn.icone { width: 40px; min-height: 40px; padding: 0; }
 
@@ -95,10 +126,10 @@ input[type=text], input[type=number], input[type=tel], input[type=password], sel
   transition: border-color .15s, box-shadow .15s;
 }
 textarea { min-height: 92px; resize: vertical; line-height: 1.45; }
-input:focus, select:focus, textarea:focus { border-color: var(--tinta); box-shadow: 0 0 0 3px rgba(24,32,29,.08); outline: none; }
+input:focus, select:focus, textarea:focus { border-color: var(--tinta); box-shadow: 0 0 0 3px rgba(var(--tinta-rgb),.08); outline: none; }
 select {
   appearance: none; padding-right: 2.2rem;
-  background: var(--branco) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%235F6B63' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right .85rem center;
+  background: var(--branco) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5l5-5' stroke='%234A6168' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right .85rem center;
 }
 input[type=range] { width: 100%; accent-color: var(--tinta); height: 28px; }
 
@@ -108,9 +139,9 @@ input[type=range] { width: 100%; accent-color: var(--tinta); height: 28px; }
 
 .aviso {
   padding: .8rem 1rem; border-radius: var(--r-s);
-  background: #FFF6E2; border: 1px solid #F2D9A6; font-size: .9375rem;
+  background: var(--aviso-fundo); border: 1px solid var(--aviso-borda); font-size: .9375rem;
 }
-.aviso.erro { background: #FDEEEC; border-color: #F4C2BB; color: var(--erro); }
+.aviso.erro { background: var(--erro-fundo); border-color: var(--erro-borda); color: var(--erro); }
 
 .toast {
   position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
@@ -123,9 +154,15 @@ input[type=range] { width: 100%; accent-color: var(--tinta); height: 28px; }
 .toast::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--dende); flex: none; }
 @keyframes toast-entra { from { opacity: 0; transform: translate(-50%, 8px); } }
 
-/* marca */
-.marca { display: inline-flex; align-items: center; gap: .55rem; font: 700 1.125rem/1 var(--f-titulo); letter-spacing: -0.02em; text-decoration: none; }
-.marca svg { width: 30px; height: 30px; }
+/* marca Kuvê: símbolo + palavra "Kuvê" com o acento-cubo sobre o e.
+   Markup:  <span class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/img/icones.svg#marca"/></svg>
+            <span class="marca-nome" aria-hidden="true">Kuv<span class="marca-e">e<svg viewBox="0 0 60 30"><use href="/img/icones.svg#acento"/></svg></span></span><span class="sr">Kuvê</span></span> */
+.marca { display: inline-flex; align-items: center; gap: .6rem; font: 800 1.25rem/1 var(--f-marca); letter-spacing: -0.045em; text-decoration: none; }
+.marca > svg { width: 32px; height: 32px; flex: none; }
+.marca-nome { display: inline-flex; align-items: flex-end; }
+.marca-e { position: relative; display: inline-block; }
+.marca-e svg { position: absolute; left: 50%; top: -.04em; width: .47em; height: .235em; transform: translateX(-46%); overflow: visible; }
+.sub-marca { font: 600 .75rem/1 var(--f-texto); letter-spacing: .02em; color: var(--kuve-laranja); padding: 5px 9px; border-radius: 999px; background: rgba(var(--laranja-rgb), .14); margin-left: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

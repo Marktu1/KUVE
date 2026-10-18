@@ -1,4 +1,4 @@
-// Utilidades partilhadas pelas páginas do Menu 3D
+// Utilidades partilhadas pelas páginas da Kuvê
 export async function api(path, { method = 'GET', body, key, form } = {}) {
   const headers = {};
   if (key) headers['x-admin-key'] = key;
